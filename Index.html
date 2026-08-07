@@ -1,0 +1,2786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electro Stock — Inventory & Sales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;
+  --border:#e2e0d8;--border2:#cccab8;
+  --text:#1a1916;--text2:#6b6960;--text3:#9a9890;
+  --accent:#d4501a;--accent-bg:#fdf0ea;--accent-border:#f0c4a8;
+  --green:#2d7a3a;--green-bg:#eaf4ec;--green-border:#b8dfc0;
+  --amber:#a06010;--amber-bg:#fdf4e3;--amber-border:#f0d898;
+  --red:#c02828;--red-bg:#fdeaea;--red-border:#f0b8b8;
+  --blue:#1a5fa0;--blue-bg:#eaf2fc;--blue-border:#b8d4f0;
+  --radius:10px;--radius-sm:6px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;letter-spacing:-.4px}
+.logo-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;box-shadow:0 2px 6px rgba(212,80,26,.35)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+
+/* ── TABS ── */
+.page-tabs{display:flex;gap:2px;background:var(--surface2);border-bottom:1px solid var(--border);padding:0 24px}
+.page-tab{padding:12px 18px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text3);font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:7px;transition:all .15s}
+.page-tab:hover{color:var(--text2)}
+.page-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── PAGE SECTIONS ── */
+.page{display:none}.page.active{display:block}
+.main{max-width:1280px;margin:0 auto;padding:24px;width:100%}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);transition:all .15s;line-height:1;white-space:nowrap}
+.btn:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#c0471a;border-color:#c0471a}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
+.btn-danger:hover{background:#fcd8d8}
+.btn-green{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.btn-green:hover{background:#d4ecda}
+.btn-lg{padding:11px 22px;font-size:14px}
+
+/* ── SUMMARY CARDS ── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;transition:box-shadow .15s}
+.stat-card:hover{box-shadow:0 3px 10px rgba(0,0,0,.08)}
+.stat-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.7px;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.stat-value{font-size:28px;font-weight:700;font-family:var(--mono);letter-spacing:-1.5px;line-height:1}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:5px}
+.stat-card.s-total{border-left:3px solid var(--border2)}.stat-card.s-total .stat-value{color:var(--text)}
+.stat-card.s-ok{border-left:3px solid var(--green)}.stat-card.s-ok .stat-value{color:var(--green)}
+.stat-card.s-low{border-left:3px solid var(--amber)}.stat-card.s-low .stat-value{color:var(--amber)}
+.stat-card.s-out{border-left:3px solid var(--red)}.stat-card.s-out .stat-value{color:var(--red)}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:360px}
+.search-wrap i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+.search-input{width:100%;padding:8px 10px 8px 34px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);color:var(--text);outline:none}
+.search-input:focus{border-color:var(--border2);box-shadow:0 0 0 2px rgba(212,80,26,.08)}
+select.filter-select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);color:var(--text);outline:none;cursor:pointer}
+.toolbar-right{margin-left:auto;display:flex;gap:8px}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.table-scroll{overflow-x:auto;overflow-y:auto;max-height:calc(100vh - 280px)}
+table{width:100%;border-collapse:collapse;min-width:860px}
+thead{position:sticky;top:0;z-index:10}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--text2)}
+th .sort-icon{opacity:.4;margin-left:4px;font-size:10px}
+th.sorted .sort-icon{opacity:1;color:var(--accent)}
+td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf7}
+.table-footer{padding:10px 16px;background:var(--surface2);border-top:1px solid var(--border);font-size:12px;color:var(--text3);display:flex;justify-content:space-between;align-items:center}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid}
+.badge-ok{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.badge-low{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.badge-out{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.badge-cat{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+
+/* ── STOCK BAR ── */
+.stock-bar-wrap{display:flex;align-items:center;gap:8px;min-width:110px}
+.stock-bar{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border)}
+.stock-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.stock-bar-fill.ok{background:var(--green)}.stock-bar-fill.low{background:var(--amber)}.stock-bar-fill.out{background:var(--red)}
+.stock-pct{font-size:11px;font-family:var(--mono);color:var(--text3);min-width:32px;text-align:right}
+.qty-num{font-family:var(--mono);font-weight:500;font-size:14px}
+.qty-available{color:var(--green)}.qty-used{color:var(--text2)}.qty-out{color:var(--red)}
+.qty-unit{font-size:11px;color:var(--text3);margin-left:2px}
+.item-name{font-weight:500;line-height:1.3}
+.item-sku{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+.actions{display:flex;gap:5px}
+.empty-state{text-align:center;padding:56px 20px;color:var(--text3)}
+.empty-state i{font-size:42px;margin-bottom:12px;display:block;opacity:.5}
+
+/* ── ALERT BANNER ── */
+.alert-banner{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);padding:11px 16px;display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:13px;color:var(--amber)}
+.alert-banner.critical{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
+
+/* ══════════════════════════════════════
+   SALE / RECEIPT PAGE
+══════════════════════════════════════ */
+.sale-layout{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+@media(max-width:960px){.sale-layout{grid-template-columns:1fr}}
+
+/* Item picker */
+.sale-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.sale-card-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.sale-card-head h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.sale-card-body{padding:16px}
+
+.item-picker-search{position:relative;margin-bottom:12px}
+.item-picker-search i{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none}
+.item-picker-search input{width:100%;padding:9px 10px 9px 34px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;outline:none}
+.item-picker-search input:focus{border-color:var(--accent)}
+
+.item-picker-list{display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto}
+.picker-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .12s;background:var(--surface)}
+.picker-item:hover{border-color:var(--accent);background:var(--accent-bg)}
+.picker-item.disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
+.picker-item-info{flex:1;min-width:0}
+.picker-item-name{font-weight:500;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.picker-item-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.picker-item-stock{text-align:right;flex-shrink:0}
+.picker-item-avail{font-family:var(--mono);font-size:13px;font-weight:600}
+.picker-item-avail.ok{color:var(--green)}.picker-item-avail.low{color:var(--amber)}.picker-item-avail.out{color:var(--red)}
+.picker-item-price{font-size:11px;color:var(--text3);margin-top:2px}
+.picker-add-btn{width:28px;height:28px;border-radius:50%;background:var(--accent);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;transition:background .12s}
+.picker-add-btn:hover{background:#c0471a}
+
+/* Cart */
+.cart-empty{text-align:center;padding:32px 16px;color:var(--text3)}
+.cart-empty i{font-size:32px;display:block;margin-bottom:8px;opacity:.4}
+.cart-items{display:flex;flex-direction:column;gap:0}
+.cart-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.cart-item:last-child{border-bottom:none}
+.cart-item-name{flex:1;font-size:13px;font-weight:500;line-height:1.3;min-width:0}
+.cart-item-sku{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.cart-qty-ctrl{display:flex;align-items:center;gap:5px}
+.cart-qty-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);transition:all .12s}
+.cart-qty-btn:hover{background:var(--border2)}
+.cart-qty-val{width:36px;text-align:center;font-family:var(--mono);font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px 4px;background:var(--surface)}
+.cart-item-total{font-family:var(--mono);font-size:13px;font-weight:500;min-width:70px;text-align:right}
+.cart-remove{color:var(--text3);background:none;border:none;cursor:pointer;font-size:15px;padding:2px;border-radius:4px;transition:color .12s}
+.cart-remove:hover{color:var(--red)}
+
+/* Cart summary */
+.cart-summary{padding:14px 16px;background:var(--surface2);border-top:2px solid var(--border)}
+.cart-sum-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:6px}
+.cart-sum-row.total{font-size:16px;font-weight:700;font-family:var(--mono);margin-top:10px;padding-top:10px;border-top:1px solid var(--border);color:var(--text)}
+.cart-sum-label{color:var(--text2)}
+.cart-sum-val{font-family:var(--mono)}
+
+/* Customer info */
+.cust-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.cust-field{display:flex;flex-direction:column;gap:4px}
+.cust-field label{font-size:11px;font-weight:500;color:var(--text2)}
+.cust-field input,.cust-field select{padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;outline:none;background:var(--surface)}
+.cust-field input:focus{border-color:var(--accent)}
+
+/* Discount row */
+.disc-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.disc-row input{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--mono);font-size:13px;outline:none}
+.disc-row input:focus{border-color:var(--accent)}
+.disc-row select{padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;outline:none;background:var(--surface)}
+
+/* Sales history table */
+.sales-table{min-width:720px}
+.receipt-link{color:var(--accent);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:4px;font-weight:500}
+.receipt-link:hover{text-decoration:underline}
+
+/* ══════════════════════════════════════
+   RECEIPT PRINT MODAL
+══════════════════════════════════════ */
+.overlay{position:fixed;inset:0;background:rgba(26,25,22,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px);animation:fadeIn .15s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);width:100%;max-width:500px;box-shadow:0 10px 40px rgba(0,0,0,.2);animation:slideUp .2s ease}
+.modal-lg{max-width:600px}.modal-xl{max-width:720px}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-size:15px;font-weight:600}
+.modal-body{padding:20px;display:flex;flex-direction:column;gap:14px;max-height:78vh;overflow-y:auto}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--text2)}
+.field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;background:var(--surface);color:var(--text);outline:none}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-hint{font-size:11px;color:var(--text3);margin-top:2px}
+.move-tabs{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.move-tab{flex:1;padding:9px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;border:none;background:var(--surface2);color:var(--text2);font-family:var(--font);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.move-tab.active-in{background:var(--green-bg);color:var(--green)}
+.move-tab.active-out{background:var(--red-bg);color:var(--red)}
+.item-stock-summary{background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);padding:12px 14px;display:flex;gap:20px}
+.stock-stat{flex:1;text-align:center}
+.stock-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-1px}
+.stock-stat-lbl{font-size:11px;color:var(--text3);margin-top:2px}
+.history-list{max-height:400px;overflow-y:auto}
+.history-item{padding:11px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;font-size:13px}
+.history-item:last-child{border-bottom:none}
+.h-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.h-icon.in{background:var(--green-bg);color:var(--green)}.h-icon.out{background:var(--red-bg);color:var(--red)}.h-icon.sale{background:var(--accent-bg);color:var(--accent)}.h-icon.damage{background:#fef3c7;color:#b45309}
+.h-main{flex:1}
+.h-type-in{color:var(--green);font-weight:600}.h-type-out{color:var(--red);font-weight:600}.h-type-sale{color:var(--accent);font-weight:600}.h-type-damage{color:#b45309;font-weight:600}
+.h-note{color:var(--text2);font-size:12px;margin-top:2px}
+.h-date{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap}
+.history-empty{text-align:center;padding:36px 20px;color:var(--text3)}
+.history-empty i{font-size:32px;display:block;margin-bottom:8px;opacity:.5}
+.import-area{border:2px dashed var(--border2);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;background:var(--surface2);color:var(--text2);transition:all .15s}
+.import-area:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.import-area i{font-size:32px;display:block;margin-bottom:10px;opacity:.7}
+.csv-template{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--text2);word-break:break-all;line-height:1.8}
+.info-box{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.6}
+.warning-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;color:var(--amber);line-height:1.6}
+.section-title{font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+
+/* ══════════════════════════════════════
+   RECEIPT (print-ready)
+══════════════════════════════════════ */
+.receipt-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:0;font-family:var(--mono);font-size:12px;color:#111;line-height:1.5}
+.receipt-header{text-align:center;padding:20px 20px 12px;border-bottom:2px dashed #ccc}
+.receipt-shop-name{font-size:18px;font-weight:700;font-family:var(--font);letter-spacing:-.5px;margin-bottom:3px}
+.receipt-shop-sub{font-size:11px;color:#555;line-height:1.6}
+.receipt-meta{padding:10px 20px;border-bottom:1px dashed #ccc;display:flex;justify-content:space-between;font-size:11px;color:#444}
+.receipt-cust{padding:8px 20px;border-bottom:1px dashed #ccc;font-size:11px;color:#444}
+.receipt-items{padding:10px 20px}
+.receipt-items table{width:100%;border-collapse:collapse;font-size:12px}
+.receipt-items th{text-align:left;padding:4px 0;border-bottom:1px solid #ccc;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#666}
+.receipt-items td{padding:5px 0;border-bottom:1px dotted #e0e0e0;vertical-align:top}
+.receipt-items td:last-child{text-align:right;white-space:nowrap}
+.receipt-items td:nth-child(2){text-align:center}
+.receipt-items td:nth-child(3){text-align:right}
+.receipt-totals{padding:10px 20px;border-top:1px dashed #ccc}
+.receipt-total-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0}
+.receipt-total-row.grand{font-size:15px;font-weight:700;font-family:var(--font);padding-top:8px;margin-top:6px;border-top:2px solid #111}
+.receipt-footer{text-align:center;padding:12px 20px 18px;border-top:1px dashed #ccc;font-size:11px;color:#777;line-height:1.8}
+.receipt-no{font-weight:700;font-size:13px}
+
+/* ── SETTINGS ── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.settings-card h4{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:7px;color:var(--text)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--text);color:#fff;padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{background:#1e6b2a}.toast.error{background:var(--red)}
+
+/* ── PRINT ── */
+@media print{
+  body *{visibility:hidden}
+  #printArea,#printArea *{visibility:visible}
+  #printArea{position:fixed;inset:0;background:#fff;padding:24px;font-family:'DM Mono',monospace}
+  .receipt-wrap{border:none;box-shadow:none}
+}
+
+@media(max-width:600px){
+  .summary-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .main{padding:14px}
+  .cust-fields{grid-template-columns:1fr}
+  .field-row{grid-template-columns:1fr}
+}
+
+/* ── LOADING SCREEN ── */
+.load-step{display:flex;align-items:flex-start;gap:12px;transition:opacity .3s}
+.step-dot{width:10px;height:10px;border-radius:50%;background:#e2e0d8;flex-shrink:0;margin-top:4px;transition:background .3s}
+.step-text{flex:1}
+.step-title{font-size:13px;font-weight:600;color:#1a1916}
+.step-sub{font-size:11px;color:#9a9890;margin-top:2px;font-family:'DM Mono',monospace}
+.step-icon{font-size:16px;color:#9a9890;flex-shrink:0;transition:color .3s}
+.step-ok .step-dot{background:#2d7a3a}
+.step-ok .step-icon{color:#2d7a3a}
+.step-err .step-dot{background:#c02828}
+.step-err .step-icon{color:#c02828}
+.step-active .step-dot{background:#d4501a}
+.step-active .step-icon{color:#d4501a}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+
+
+/* ── LOGIN SCREEN ── */
+.login-wrap{position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 34px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-card .field{margin-bottom:14px}
+.login-err{display:none;background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);font-size:12px;padding:9px 12px;border-radius:8px;margin-bottom:14px}
+/* ── LICENSE SCREEN ── */
+.lic-form{margin-top:10px}
+.lic-form textarea{width:100%;min-height:70px;padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:11px;resize:vertical}
+/* ── ROLE VISIBILITY ── */
+body.role-user .admin-only{display:none !important}
+body.no-damage-perm .perm-damage{display:none !important}
+body.no-price-perm .perm-price{display:none !important}
+body.no-export-perm .perm-export{display:none !important}
+body.no-notes-perm .perm-notes{display:none !important}
+.user-pill{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);font-size:12px}
+.user-pill .role-tag{font-size:10px;padding:1px 7px;border-radius:10px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);text-transform:uppercase;letter-spacing:.4px}
+.logo-icon img{width:100%;height:100%;object-fit:contain;border-radius:8px}
+.users-table{width:100%;border-collapse:collapse;font-size:13px}
+.users-table th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}
+.users-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.logo-upload-preview{width:56px;height:56px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface2)}
+.logo-upload-preview img{width:100%;height:100%;object-fit:contain}
+.report-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px}
+.report-table th{background:var(--surface2);text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--text3);border:1px solid var(--border)}
+.report-table td{padding:6px 10px;border:1px solid var(--border)}
+.report-table caption{text-align:left;font-weight:700;font-size:13px;margin:14px 0 6px;caption-side:top}
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#f5f4f0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:36px">
+    <div style="width:48px;height:48px;background:#d4501a;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(212,80,26,.4)">
+      <i class="ti ti-bolt" style="color:#fff;font-size:26px"></i>
+    </div>
+    <div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.5px;color:#1a1916">Electro Stock</div>
+      <div style="font-size:12px;color:#9a9890;margin-top:1px">Inventory &amp; Sales System</div>
+    </div>
+  </div>
+  <div id="loadCard" style="background:#fff;border:1px solid #e2e0d8;border-radius:14px;padding:28px 32px;width:100%;max-width:460px;box-shadow:0 4px 24px rgba(0,0,0,.08);">
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:24px" id="loadSteps">
+      <div class="load-step" id="step1"><div class="step-dot" id="dot1"></div><div class="step-text"><div class="step-title">Connecting to server</div><div class="step-sub" id="sub1">Checking http://localhost:5050...</div></div><div class="step-icon" id="icon1"><i class="ti ti-loader-2 spin"></i></div></div>
+      <div class="load-step" id="step2" style="opacity:.4"><div class="step-dot" id="dot2"></div><div class="step-text"><div class="step-title">Verifying data file</div><div class="step-sub" id="sub2">Waiting...</div></div><div class="step-icon" id="icon2"><i class="ti ti-circle-dashed"></i></div></div>
+      <div class="load-step" id="step3" style="opacity:.4"><div class="step-dot" id="dot3"></div><div class="step-text"><div class="step-title">Loading inventory data</div><div class="step-sub" id="sub3">Waiting...</div></div><div class="step-icon" id="icon3"><i class="ti ti-circle-dashed"></i></div></div>
+    </div>
+    <div id="loadError" style="display:none;background:#fdeaea;border:1px solid #f0b8b8;border-radius:8px;padding:12px 14px;font-size:12px;color:#c02828;line-height:1.7;margin-bottom:16px"></div>
+    <div id="setupForm" style="display:none;margin-bottom:16px">
+      <div style="font-size:12px;color:#6b6960;margin-bottom:10px;line-height:1.7">No data file path is configured on the server yet. Enter the full path where your inventory data should be saved:</div>
+      <input type="text" id="setupPath" placeholder="e.g. C:/Users/imalkap/OneDrive/inventory_data.json" style="width:100%;padding:9px 10px;border:1px solid #e2e0d8;border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;outline:none;margin-bottom:10px;color:#1a1916">
+      <button onclick="setupAndConnect()" style="width:100%;padding:10px;background:#d4501a;color:#fff;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><i class="ti ti-plug-connected"></i> Connect &amp; Save Path</button>
+    </div>
+    <div id="loadActions" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button id="retryBtn" onclick="bootSequence()" style="display:none;flex:1;padding:9px;background:#1a1916;color:#fff;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer"><i class="ti ti-refresh"></i> Retry Connection</button>
+    </div>
+    <details style="margin-top:16px" id="bootModeDetails" open>
+      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#6b6960;list-style:none">⚙ Backend Auto-Sync — data source: <span id="bootModeLabel">Local Python Server</span> (click to change)</summary>
+      <div style="margin-top:10px;padding:12px;background:#f5f4f0;border-radius:8px;border:1px solid #e2e0d8;font-size:12px;color:#1a1916;line-height:1.7">
+        <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed #e2e0d8">
+          <label for="profileFileInput" style="display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border-radius:6px;border:1px dashed #b8b6ac;background:#fff;cursor:pointer;font-weight:600;color:#1a1916"><i class="ti ti-file-import"></i> Load connection profile (.json)</label>
+          <input type="file" id="profileFileInput" accept="application/json,.json" style="display:none" onchange="handleProfileFile(event)">
+          <div style="font-size:10.5px;color:#9a9890;margin-top:6px;text-align:center">Have a connection profile from your provider? Load it here instead of typing everything below by hand.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button id="bootModeLocalBtn" onclick="setBootMode('local')" style="flex:1;padding:7px;border-radius:6px;border:1px solid #e2e0d8;background:#1a1916;color:#fff;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer">Local Python Server</button>
+          <button id="bootModeGithubBtn" onclick="setBootMode('github')" style="flex:1;padding:7px;border-radius:6px;border:1px solid #e2e0d8;background:#fff;color:#1a1916;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer">GitHub Repository</button>
+        </div>
+        <div id="bootGithubForm" style="display:none;flex-direction:column;gap:8px">
+          <input type="text" id="bg_owner" placeholder="GitHub owner / organisation" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <input type="text" id="bg_repo" placeholder="Repository name" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <input type="text" id="bg_path" placeholder="File path in repo, e.g. data/electro_stock_data.json" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <input type="text" id="bg_branch" placeholder="Branch (e.g. main)" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <input type="password" id="bg_token" placeholder="Personal access token (repo write access)" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <div style="font-size:10.5px;color:#9a9890;line-height:1.6">The token is stored only in this browser (never synced or shared). Ask your admin for the repo details and generate your own token with "repo contents" write access.</div>
+          <button onclick="saveBootGithubConfig()" style="padding:9px;background:#d4501a;color:#fff;border:none;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer"><i class="ti ti-plug-connected"></i> Save &amp; Connect</button>
+        </div>
+      </div>
+    </details>
+  </div>
+  <div style="margin-top:20px;font-size:11px;color:#9a9890;text-align:center" id="bootFootnote">Run <strong>start_server.bat</strong> once, or run <strong>Install_AutoStart.bat</strong> once so it starts itself hidden every login</div>
+</div>
+
+<!-- LICENSE SCREEN -->
+<div id="licenseScreen" class="login-wrap" style="display:none">
+  <div class="login-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+      <div class="logo-icon" style="width:38px;height:38px"><i class="ti ti-shield-lock"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:16px">License required</div>
+        <div style="font-size:11px;color:var(--text3)">Enter the license key provided by your system provider</div>
+      </div>
+    </div>
+    <div id="licErr" class="login-err"></div>
+    <div class="lic-form">
+      <div class="field"><label>License key</label><textarea id="licKeyInput" placeholder="Paste the license key here…"></textarea></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="activateLicense()"><i class="ti ti-key"></i> Activate license</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" class="login-wrap" style="display:none">
+  <div class="login-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px" id="loginBrandRow">
+      <div class="logo-icon" id="loginLogoIcon" style="width:38px;height:38px"><i class="ti ti-bolt"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:16px" id="loginSysName">Electro Stock</div>
+        <div style="font-size:11px;color:var(--text3)">Sign in to continue</div>
+      </div>
+    </div>
+    <div id="loginErr" class="login-err"></div>
+    <div class="field"><label>Username</label><input type="text" id="loginUser" placeholder="Username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="field"><label>Password</label><input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="doLogin()"><i class="ti ti-login"></i> Sign in</button>
+  </div>
+</div>
+
+<div id="firstRunScreen" class="login-wrap" style="display:none">
+  <div class="login-card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px">
+      <div class="logo-icon" style="width:38px;height:38px"><i class="ti ti-bolt"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:16px">Welcome — first-time setup</div>
+        <div style="font-size:11px;color:var(--text3)">Create the first admin account for this system</div>
+      </div>
+    </div>
+    <div id="firstRunErr" class="login-err"></div>
+    <div class="field"><label>Admin username</label><input type="text" id="fr_user" placeholder="e.g. admin"></div>
+    <div class="field"><label>Admin password</label><input type="password" id="fr_pass" placeholder="Choose a password"></div>
+    <div class="field"><label>Confirm password</label><input type="password" id="fr_pass2" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')createFirstAdmin()"></div>
+    <div style="font-size:11.5px;color:var(--text3);margin:4px 0 6px;line-height:1.6">This account will have full admin access. You can add more users afterwards from Settings.</div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" onclick="createFirstAdmin()"><i class="ti ti-user-plus"></i> Create admin account</button>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until boot completes) -->
+<div id="appShell" style="display:none">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon" id="topLogoIcon"><i class="ti ti-bolt"></i></div>
+    <span id="topSysName">Electro Stock</span>
+  </div>
+  <div id="syncStatus" style="display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--surface2);color:var(--text3)" title="Backend sync status">
+      <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block"></span>
+      <span id="syncLabel">Not connected</span>
+    </div>
+    <div class="topbar-right">
+    <button class="btn btn-sm" title="Fetch the latest data now" onclick="manualRefresh()" id="refreshBtn"><i class="ti ti-refresh"></i> Refresh data</button>
+    <div class="user-pill"><i class="ti ti-user-circle"></i> <span id="curUserName">—</span> <span class="role-tag" id="curUserRole">—</span></div>
+    <button class="btn btn-sm admin-only" onclick="showImport()"><i class="ti ti-upload"></i> Import</button>
+
+    <button class="btn btn-sm perm-export" onclick="exportCSV()"><i class="ti ti-download"></i> Export</button>
+    <button class="btn btn-sm btn-primary" onclick="switchTab('sale')"><i class="ti ti-receipt"></i> New Sale</button>
+    <button class="btn btn-sm" title="Logout" onclick="doLogout()"><i class="ti ti-logout"></i></button>
+  </div>
+</div>
+
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <button class="page-tab active" id="tab-inventory" onclick="switchTab('inventory')"><i class="ti ti-package"></i> Inventory</button>
+  <button class="page-tab" id="tab-sale" onclick="switchTab('sale')"><i class="ti ti-shopping-cart"></i> New Sale</button>
+  <button class="page-tab" id="tab-sales" onclick="switchTab('sales')"><i class="ti ti-receipt"></i> Sales History</button>
+  <button class="page-tab" id="tab-reports" onclick="switchTab('reports')"><i class="ti ti-mail"></i> Reports</button>
+  <button class="page-tab admin-only" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> Settings</button>
+</div>
+
+<!-- ══════════ INVENTORY PAGE ══════════ -->
+<div id="page-inventory" class="page active">
+  <div class="main">
+    <div class="summary-grid" id="summaryGrid"></div>
+    <div id="alertBanners"></div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="search-input" id="searchInput" type="text" placeholder="Search name, SKU, category…" oninput="renderTable()">
+      </div>
+      <select class="filter-select" id="catFilter" onchange="renderTable()"><option value="">All categories</option></select>
+      <select class="filter-select" id="statusFilter" onchange="renderTable()">
+        <option value="">All status</option>
+        <option value="ok">In stock</option>
+        <option value="low">Low stock</option>
+        <option value="out">Out of stock</option>
+      </select>
+      <div class="toolbar-right">
+        <button class="btn btn-sm" onclick="clearSearch()"><i class="ti ti-x"></i></button>
+        <button class="btn btn-sm btn-primary admin-only" onclick="showAddItem()"><i class="ti ti-plus"></i> Add Item</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th onclick="sortBy('name')" id="th-name">Item / SKU <span class="sort-icon ti ti-selector"></span></th>
+            <th onclick="sortBy('category')" id="th-category">Category <span class="sort-icon ti ti-selector"></span></th>
+            <th>Stock level</th>
+            <th onclick="sortBy('available')" id="th-available">Available <span class="sort-icon ti ti-selector"></span></th>
+            <th onclick="sortBy('used')" id="th-used">Used <span class="sort-icon ti ti-selector"></span></th>
+            <th onclick="sortBy('total')" id="th-total">Total <span class="sort-icon ti ti-selector"></span></th>
+            <th>Min. stock</th>
+            <th>Unit price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="tableFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ NEW SALE PAGE ══════════ -->
+<div id="page-sale" class="page">
+  <div class="main">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:18px;font-weight:700;letter-spacing:-.4px">New Sale</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px">Select items, enter customer details, then issue receipt</div>
+      </div>
+      <button class="btn" onclick="clearCart()"><i class="ti ti-trash"></i> Clear cart</button>
+    </div>
+    <div class="sale-layout">
+      <!-- Left: item picker -->
+      <div>
+        <div class="sale-card">
+          <div class="sale-card-head">
+            <h3><i class="ti ti-package-search"></i> Select items to sell</h3>
+            <span id="pickerCount" style="font-size:12px;color:var(--text3)"></span>
+          </div>
+          <div class="sale-card-body">
+            <div class="item-picker-search">
+              <i class="ti ti-search"></i>
+              <input type="text" id="pickerSearch" placeholder="Search items…" oninput="renderPicker()">
+            </div>
+            <div class="item-picker-list" id="pickerList"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Right: cart + customer -->
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <!-- Customer info -->
+        <div class="sale-card">
+          <div class="sale-card-head"><h3><i class="ti ti-user"></i> Customer details</h3></div>
+          <div class="sale-card-body">
+            <div class="cust-fields">
+              <div class="cust-field"><label>Customer name</label><input type="text" id="custName" placeholder="Walk-in customer"></div>
+              <div class="cust-field"><label>Phone number</label><input type="text" id="custPhone" placeholder="07X XXX XXXX"></div>
+            </div>
+            <div class="cust-fields" style="margin-top:8px">
+              <div class="cust-field"><label>Payment method</label>
+                <select id="payMethod">
+                  <option>Cash</option><option>Card</option><option>Bank Transfer</option><option>Credit</option>
+                </select>
+              </div>
+              <div class="cust-field"><label>Invoice note</label><input type="text" id="saleNote" placeholder="Optional note…"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Cart -->
+        <div class="sale-card">
+          <div class="sale-card-head">
+            <h3><i class="ti ti-shopping-cart"></i> Cart</h3>
+            <span id="cartItemCount" style="font-size:12px;color:var(--text3)">0 items</span>
+          </div>
+          <div id="cartBody">
+            <div class="cart-empty"><i class="ti ti-shopping-cart-off"></i>No items added yet</div>
+          </div>
+          <div class="cart-summary" id="cartSummary" style="display:none">
+            <div style="margin-bottom:12px">
+              <div class="section-title">Discount</div>
+              <div class="disc-row">
+                <input type="number" id="discVal" min="0" placeholder="0" oninput="recalcCart()">
+                <select id="discType" onchange="recalcCart()"><option value="pct">%</option><option value="amt">Rs.</option></select>
+              </div>
+            </div>
+            <div class="cart-sum-row"><span class="cart-sum-label">Subtotal</span><span class="cart-sum-val" id="csSubtotal">Rs. 0</span></div>
+            <div class="cart-sum-row"><span class="cart-sum-label">Discount</span><span class="cart-sum-val" id="csDiscount" style="color:var(--green)">Rs. 0</span></div>
+            <div class="cart-sum-row total"><span>TOTAL</span><span id="csTotal">Rs. 0</span></div>
+            <button class="btn btn-primary btn-lg" style="width:100%;margin-top:14px;justify-content:center" onclick="issueReceipt()">
+              <i class="ti ti-receipt"></i> Issue Receipt & Complete Sale
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SALES HISTORY PAGE ══════════ -->
+<div id="page-sales" class="page">
+  <div class="main">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:18px;font-weight:700;letter-spacing:-.4px">Sales History</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:2px">All completed sales — search by reference no., customer, or phone</div>
+      </div>
+      <button class="btn btn-sm" onclick="exportSalesCSV()"><i class="ti ti-download"></i> Export sales</button>
+    </div>
+    <!-- Sales summary -->
+    <div class="summary-grid" id="salesSummaryGrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px"></div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input class="search-input" id="salesSearchInput" type="text" placeholder="Search by reference no., customer, phone…" oninput="renderSalesTable()">
+      </div>
+      <div class="toolbar-right">
+        <button class="btn btn-sm" onclick="document.getElementById('salesSearchInput').value='';renderSalesTable()"><i class="ti ti-x"></i> Clear</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table class="sales-table">
+          <thead><tr>
+            <th>Ref. No.</th>
+            <th>Date & Time</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Payment</th>
+            <th>Discount</th>
+            <th>Total</th>
+            <th>Warranty</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody id="salesTableBody"></tbody>
+        </table>
+      </div>
+      <div class="table-footer" id="salesFooter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ REPORTS PAGE ══════════ -->
+<div id="page-reports" class="page">
+  <div class="main">
+    <div style="font-size:18px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Summary Report</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Send today's inventory levels and today's sales to anyone who needs them — a table-formatted email, one click.</div>
+
+    <div class="settings-card" style="margin-bottom:20px">
+      <h4><i class="ti ti-mail"></i> Recipient</h4>
+      <div class="field-row" style="align-items:end">
+        <div class="field" style="flex:1"><label>Recipient email address</label><input type="text" id="r_reportEmail" placeholder="e.g. owner@email.com" class="admin-only-input"></div>
+        <button class="btn admin-only" onclick="saveReportEmail()" style="height:36px"><i class="ti ti-check"></i> Save</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px" id="reportEmailUserNote"></div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="sendSummaryReport()"><i class="ti ti-send"></i> Send Report via Email</button>
+      <button class="btn" onclick="copyReportTable()"><i class="ti ti-copy"></i> Copy formatted table</button>
+      <button class="btn" onclick="renderReportPreview()"><i class="ti ti-refresh"></i> Refresh preview</button>
+    </div>
+
+    <div class="settings-card">
+      <h4><i class="ti ti-table"></i> Report preview</h4>
+      <div id="reportPreviewBox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SETTINGS PAGE ══════════ -->
+<div id="page-settings" class="page">
+  <div class="main">
+    <div style="font-size:18px;font-weight:700;letter-spacing:-.4px;margin-bottom:6px">Settings</div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:20px">Shop details appear on every receipt</div>
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h4><i class="ti ti-building-store"></i> Shop information</h4>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="field"><label>Shop name</label><input type="text" id="s_shopName" placeholder="My Electrical Shop"></div>
+          <div class="field"><label>Address line 1</label><input type="text" id="s_addr1" placeholder="No. 12, Main Street"></div>
+          <div class="field"><label>Address line 2 / City</label><input type="text" id="s_addr2" placeholder="Colombo 03"></div>
+          <div class="field"><label>Phone</label><input type="text" id="s_phone" placeholder="011 XXX XXXX"></div>
+          <div class="field"><label>Email (optional)</label><input type="text" id="s_email" placeholder="shop@email.com"></div>
+          <div class="field"><label>Receipt footer message</label><input type="text" id="s_footer" placeholder="Thank you for your purchase!"></div>
+          <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-check"></i> Save settings</button>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h4><i class="ti ti-file-invoice"></i> Receipt preferences</h4>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="field"><label>Receipt number prefix</label><input type="text" id="s_prefix" placeholder="INV-"></div>
+          <div class="field"><label>Starting receipt number</label><input type="number" id="s_startNo" placeholder="1001" min="1"></div>
+          <div class="field"><label>Currency symbol</label><input type="text" id="s_currency" placeholder="Rs."></div>
+          <button class="btn btn-primary" onclick="saveSettings()"><i class="ti ti-check"></i> Save settings</button>
+        </div>
+        <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--border)">
+          <h4 style="margin-bottom:10px"><i class="ti ti-database-export"></i> Data management</h4>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="showImport()"><i class="ti ti-upload"></i> Import items</button>
+            <button class="btn btn-sm perm-export" onclick="exportCSV()"><i class="ti ti-download"></i> Export items</button>
+            <button class="btn btn-sm btn-danger" onclick="resetAll()"><i class="ti ti-trash"></i> Reset all data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BACKEND SYNC CARD -->
+      <div class="settings-card" style="grid-column:1 / -1">
+        <h4><i class="ti ti-server"></i> Backend Auto-Sync</h4>
+
+        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px">
+          <span id="syncCardDot" style="width:10px;height:10px;border-radius:50%;background:var(--text3);flex-shrink:0;display:inline-block"></span>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span id="syncCardLabel" style="font-weight:600;font-size:13px;color:var(--text3)">Not connected</span>
+              <span id="syncCardPath" style="font-size:11px;color:var(--text3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:340px"></span>
+            </div>
+            <div id="syncCardTime" style="font-size:11px;color:var(--text3);margin-top:2px"></div>
+          </div>
+          <button class="btn btn-sm" onclick="testConnection()"><i class="ti ti-wifi"></i> Test</button>
+          <button class="btn btn-sm btn-green" onclick="manualRefresh()"><i class="ti ti-cloud-download"></i> Load from file</button>
+        </div>
+
+        <div id="syncCardMsg" style="font-size:12px;color:var(--text2);margin-bottom:14px;padding:10px 14px;background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius-sm);line-height:1.7">
+          Run <strong>start_server.bat</strong> on your PC, then enter your file path below and click <strong>Connect &amp; Save Path</strong>. (For a server that keeps stopping on its own, run <strong>Install_AutoStart.bat</strong> once instead — see setup instructions below.)
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn-sm" id="modeLocalBtn" onclick="switchSyncModeInSettings('local')" style="flex:1;justify-content:center"><i class="ti ti-server"></i> Local Python Server</button>
+          <button class="btn btn-sm" id="modeGithubBtn" onclick="switchSyncModeInSettings('github')" style="flex:1;justify-content:center"><i class="ti ti-brand-github"></i> GitHub Repository</button>
+        </div>
+
+        <div id="localSyncBlock">
+          <div style="display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin-bottom:14px">
+            <div class="field">
+              <label>Data file path on your PC or shared drive</label>
+              <input type="text" id="s_dataFile" placeholder="e.g.  C:\Users\imalkap\OneDrive\inventory_data.json" style="font-family:var(--mono);font-size:12px">
+              <span class="field-hint">The Python server will read and write all inventory data to this path automatically.</span>
+            </div>
+            <button class="btn btn-primary" onclick="connectBackend()" style="height:36px"><i class="ti ti-plug-connected"></i> Connect &amp; Save Path</button>
+          </div>
+        </div>
+
+        <div id="githubSyncBlock" style="display:none">
+          <div class="warning-box" style="margin-bottom:14px">
+            <i class="ti ti-alert-triangle"></i> GitHub mode is optional. It lets several laptops share this inventory over the internet with no local server — but every device must be individually connected here (this is a per-device setting, not something one Save button pushes to everyone).
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div class="field"><label>Repository owner / org</label><input type="text" id="s_gh_owner" placeholder="e.g. imalkap"></div>
+            <div class="field"><label>Repository name</label><input type="text" id="s_gh_repo" placeholder="e.g. electro-stock-data"></div>
+            <div class="field"><label>File path in repo</label><input type="text" id="s_gh_path" placeholder="data/electro_stock_data.json" style="font-family:var(--mono);font-size:12px"></div>
+            <div class="field"><label>Branch</label><input type="text" id="s_gh_branch" placeholder="main"></div>
+          </div>
+          <div class="field" style="margin-bottom:10px"><label>Personal access token (this device only)</label><input type="password" id="s_gh_token" placeholder="Leave blank to keep the token already saved on this device" style="font-family:var(--mono);font-size:12px"></div>
+          <button class="btn btn-primary" onclick="saveGithubConfigFromSettings()"><i class="ti ti-plug-connected"></i> Save &amp; Connect this device</button>
+          <div class="field-hint" style="margin-top:8px">Each user generates their own token on GitHub (Settings → Developer settings → Personal access tokens) with write access to this one repo, and pastes it here on their own device. The token never leaves this browser.</div>
+        </div>
+
+        <div style="margin-top:16px;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <div class="section-title" style="margin-bottom:6px"><i class="ti ti-file-export"></i> Onboard a new device / new user</div>
+          <div class="field-hint" style="margin-bottom:10px">Generates a small connection-profile file using this device's current settings above. Give it to a new user — on the very first screen they open, they can load this file instead of typing everything in by hand.</div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);margin-bottom:6px;cursor:pointer"><input type="checkbox" id="profile_include_token"> Include this device's GitHub token in the file <span style="color:var(--red)">(only for a trusted person — anyone with the file gets that token)</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+            <div class="field"><label>Starter admin username <span class="field-hint" style="display:inline">(optional)</span></label><input type="text" id="profile_admin_user" placeholder="leave blank to skip"></div>
+            <div class="field"><label>Starter admin password <span class="field-hint" style="display:inline">(optional)</span></label><input type="text" id="profile_admin_pass" placeholder="leave blank to skip"></div>
+          </div>
+          <div class="field-hint" style="margin-bottom:10px">Only used if the new user's data file/repo is completely empty (no admin account yet) — it pre-fills their "create admin" screen so they just have to click through, not type. It never overwrites an existing account. Tell them to change this password after their first login. Use a different one per person if you can — don't reuse the same starter password everywhere.</div>
+          <button class="btn btn-sm" onclick="downloadConnectionProfile()"><i class="ti ti-download"></i> Download connection profile (.json)</button>
+        </div>
+
+        <div style="margin-top:16px">
+          <div class="section-title" style="margin-bottom:6px"><i class="ti ti-activity"></i> Sync log</div>
+          <div id="syncLog" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-family:var(--mono);font-size:11px;line-height:1.9;min-height:52px;color:var(--text3)">No sync activity yet.</div>
+        </div>
+
+        <details style="margin-top:16px">
+          <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);list-style:none;display:flex;align-items:center;gap:6px"><i class="ti ti-info-circle"></i> Setup instructions (click to expand)</summary>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text2);line-height:1.8;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+            <div><strong>Local Python Server</strong> &mdash; Step 1: install Python from <strong>python.org</strong>. Step 2: keep <strong>electro_stock_server.py</strong>, <strong>start_server.bat</strong> and <strong>Install_AutoStart.bat</strong> together in one folder. Step 3: enter your save path above and click Connect. Best for a single PC, or several PCs on the same office network/shared drive.</div>
+            <div><strong>Server keeps stopping / dropping?</strong> &mdash; Run <strong>Install_AutoStart.bat</strong> once (double-click it, no admin rights needed). It sets the server to start automatically at every Windows login, run completely hidden, and restart itself within seconds if it ever crashes — so there's no visible window for anyone to accidentally close, and no button to remember to press. Run <strong>Uninstall_AutoStart.bat</strong> to undo it.</div>
+            <div><strong>GitHub Repository</strong> &mdash; No Python or server needed. Create a (private, recommended) GitHub repo, generate a personal access token per device, and fill in the fields above on each laptop that should use the system. Best when laptops are in different locations or you want a proper internet-based multi-user setup.</div>
+            <div><strong>Onboarding a new device fast</strong> &mdash; Use "Download connection profile" above, send the file to the new user, and have them click "Load connection profile" on their very first loading screen instead of typing in the repo/path/branch by hand.</div>
+            <div style="margin-top:4px;padding:8px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);color:var(--amber)">
+              <i class="ti ti-alert-triangle"></i> With either backend, if two people save at nearly the same moment, the system now warns instead of silently dropping one person's changes — use the <strong>Refresh data</strong> button in the top bar often when several people are working at once.
+            </div>
+          </div>
+        </details>
+      </div>
+
+
+      <!-- CATEGORY MANAGEMENT CARD -->
+      <div class="settings-card">
+        <h4><i class="ti ti-tags"></i> Item Categories</h4>
+        <div id="catListBox" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="newCatInput" placeholder="e.g. Solar Accessories" style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--font);font-size:13px" onkeydown="if(event.key==='Enter')addCategory()">
+          <button class="btn btn-primary" onclick="addCategory()"><i class="ti ti-plus"></i> Add</button>
+        </div>
+      </div>
+
+      <!-- BRANDING CARD -->
+      <div class="settings-card">
+        <h4><i class="ti ti-palette"></i> Branding</h4>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div class="field"><label>System name</label><input type="text" id="s_sysName" placeholder="Electro Stock"></div>
+          <div class="field">
+            <label>Logo</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="logo-upload-preview" id="logoPreview"><i class="ti ti-bolt" style="font-size:22px;color:var(--text3)"></i></div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <input type="file" id="s_logoFile" accept="image/*" onchange="handleLogoUpload(event)">
+                <button class="btn btn-sm" onclick="clearLogo()"><i class="ti ti-x"></i> Remove logo</button>
+              </div>
+            </div>
+          </div>
+          <div class="field"><label>Theme accent colour</label><input type="color" id="s_accent" value="#d4501a" style="width:60px;height:34px;padding:2px;cursor:pointer"></div>
+          <div class="field"><label>Canvas / background colour</label><input type="color" id="s_bg" value="#f5f4f0" style="width:60px;height:34px;padding:2px;cursor:pointer"><span class="field-hint">The main page background — this is the "white background" colour.</span></div>
+          <div class="field"><label>Card / panel colour</label><input type="color" id="s_surface" value="#ffffff" style="width:60px;height:34px;padding:2px;cursor:pointer"><span class="field-hint">Background of cards, tables and inputs.</span></div>
+          <button class="btn btn-primary" onclick="saveBranding()"><i class="ti ti-check"></i> Save branding</button>
+        </div>
+      </div>
+
+      <!-- LICENSE CARD -->
+      <div class="settings-card">
+        <h4><i class="ti ti-shield-lock"></i> License</h4>
+        <div id="licenseInfoBox" style="font-size:12px;color:var(--text2);line-height:1.9;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:12px"></div>
+        <div class="field"><label>Update / replace license key</label><textarea id="s_licKey" style="width:100%;min-height:60px;padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--mono);font-size:11px" placeholder="Paste new license key here…"></textarea></div>
+        <button class="btn btn-primary" onclick="updateLicense()"><i class="ti ti-key"></i> Update license</button>
+      </div>
+
+      <!-- PERMISSIONS CARD -->
+      <div class="settings-card">
+        <h4><i class="ti ti-lock"></i> Normal User Permissions</h4>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6">Control which optional features Normal Users can access. Stock In/Out, editing items, and Settings always stay Admin-only regardless of these toggles.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="p_reportDamage" style="width:16px;height:16px"> Can report damaged items</label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="p_viewPrice" style="width:16px;height:16px"> Can view item prices</label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="p_exportData" style="width:16px;height:16px"> Can export inventory/sales CSV</label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="p_viewNotes" style="width:16px;height:16px"> Can view item notes</label>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px" onclick="savePermissions()"><i class="ti ti-check"></i> Save permissions</button>
+      </div>
+
+      <!-- USER MANAGEMENT CARD -->
+      <div class="settings-card" style="grid-column:1 / -1">
+        <h4><i class="ti ti-users"></i> User Management</h4>
+        <div style="overflow-x:auto;margin-bottom:14px">
+          <table class="users-table">
+            <thead><tr><th>Username</th><th>Role</th><th>Actions</th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;max-width:640px">
+          <div class="field"><label>Username</label><input type="text" id="u_username" placeholder="e.g. kamal"></div>
+          <div class="field"><label>Password</label><input type="text" id="u_password" placeholder="Password"></div>
+          <div class="field"><label>Role</label>
+            <select id="u_role"><option value="user">User</option><option value="admin">Admin</option></select>
+          </div>
+          <button class="btn btn-primary" onclick="addUser()" style="height:36px"><i class="ti ti-user-plus"></i> Add user</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- Add/Edit Item -->
+<div class="overlay" id="itemModal" style="display:none" onclick="closeIfOverlay(event,'itemModal')">
+  <div class="modal">
+    <div class="modal-head"><h3 id="itemModalTitle">Add item</h3><button class="btn btn-sm" onclick="closeModal('itemModal')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Item name *</label><input id="f_name" type="text" placeholder="e.g. Circuit Breaker 20A"></div>
+        <div class="field"><label>SKU / Code</label><input id="f_sku" type="text" placeholder="e.g. CB-20A-001"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Category</label>
+          <select id="f_cat"></select>
+        </div>
+        <div class="field"><label>Unit</label><input id="f_unit" type="text" placeholder="pcs / m / kg / roll"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Total stock *</label><input id="f_total" type="number" min="0" placeholder="0"></div>
+        <div class="field"><label>Currently used</label><input id="f_used" type="number" min="0" placeholder="0"><span class="field-hint">Leave 0 for new items</span></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Min. stock alert</label><input id="f_min" type="number" min="0" placeholder="5"></div>
+        <div class="field"><label>Unit price (Rs.)</label><input id="f_price" type="number" min="0" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Default warranty (months)</label><input id="f_warranty" type="number" min="0" placeholder="e.g. 12"><span class="field-hint">Auto-filled into New Sale for this item. 0 = no warranty.</span></div>
+      </div>
+      <div class="field"><label>Notes</label><input id="f_notes" type="text" placeholder="Supplier, location, spec…"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('itemModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()"><i class="ti ti-check"></i> Save item</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stock Movement -->
+<div class="overlay" id="moveModal" style="display:none" onclick="closeIfOverlay(event,'moveModal')">
+  <div class="modal">
+    <div class="modal-head"><h3 id="moveModalTitle">Stock movement</h3><button class="btn btn-sm" onclick="closeModal('moveModal')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div id="moveStockSummary" class="item-stock-summary"></div>
+      <div><div class="section-title">Movement type</div>
+        <div class="move-tabs">
+          <button class="move-tab" id="tabIn" onclick="setMoveType('in')"><i class="ti ti-arrow-down"></i> Stock In</button>
+          <button class="move-tab" id="tabOut" onclick="setMoveType('out')"><i class="ti ti-arrow-up"></i> Stock Out</button>
+        </div>
+      </div>
+      <div class="field"><label>Quantity *</label><input id="m_qty" type="number" min="1" placeholder="Enter quantity"></div>
+      <div class="field"><label>Note / Reason</label><input id="m_note" type="text" placeholder="e.g. New stock from supplier…"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('moveModal')">Cancel</button>
+      <button class="btn btn-primary" id="moveBtn" onclick="saveMove()"><i class="ti ti-check"></i> Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Report Damage -->
+<div class="overlay" id="damageModal" style="display:none" onclick="closeIfOverlay(event,'damageModal')">
+  <div class="modal">
+    <div class="modal-head"><h3 id="damageModalTitle">Report damage</h3><button class="btn btn-sm" onclick="closeModal('damageModal')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div id="damageStockSummary" class="item-stock-summary"></div>
+      <div class="field"><label>Damaged quantity *</label><input id="d_qty" type="number" min="1" placeholder="Enter quantity"></div>
+      <div class="field"><label>Reason *</label><input id="d_note" type="text" placeholder="e.g. Dropped, water damage, broken during transport…"></div>
+      <div style="font-size:12px;color:var(--text3);background:var(--surface2);padding:8px 12px;border-radius:8px"><i class="ti ti-info-circle"></i> This permanently removes stock and is logged with your username and timestamp.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('damageModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="saveDamage()"><i class="ti ti-check"></i> Confirm damage</button>
+    </div>
+  </div>
+</div>
+
+<!-- History -->
+<div class="overlay" id="historyModal" style="display:none" onclick="closeIfOverlay(event,'historyModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="historyTitle">Stock history</h3><button class="btn btn-sm" onclick="closeModal('historyModal')"><i class="ti ti-x"></i></button></div>
+    <div class="history-list" id="historyList"></div>
+    <div class="modal-foot" style="justify-content:space-between">
+      <span id="historyCount" style="font-size:12px;color:var(--text3)"></span>
+      <button class="btn btn-sm btn-danger admin-only" onclick="clearItemHistory()"><i class="ti ti-trash"></i> Clear history</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import -->
+<div class="overlay" id="importModal" style="display:none" onclick="closeIfOverlay(event,'importModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>Import from Excel / CSV</h3><button class="btn btn-sm" onclick="closeModal('importModal')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="info-box"><strong>How to import from Excel:</strong><br>1. File → Save As → <strong>CSV UTF-8 (.csv)</strong><br>2. Row 1 must have the column headers shown below<br>3. Upload the CSV here</div>
+      <div><div class="section-title">Required headers (row 1):</div>
+        <div class="csv-template">name | sku | category | unit | total | used | min_stock | price</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Only <strong>name</strong> is required. Others are optional.</div>
+      </div>
+      <div class="warning-box"><i class="ti ti-alert-triangle"></i> Import <strong>adds</strong> new items. Existing items are not overwritten.</div>
+      <div class="import-area" id="importArea" onclick="document.getElementById('csvFile').click()" ondragover="dragOver(event)" ondrop="dropFile(event)">
+        <i class="ti ti-file-upload"></i>
+        <strong>Click to upload or drag &amp; drop</strong>
+        <span style="font-size:12px">CSV file only (.csv)</span>
+        <input type="file" id="csvFile" accept=".csv,.txt" style="display:none" onchange="handleCSV(event)">
+      </div>
+      <button class="btn btn-sm" onclick="downloadTemplate()"><i class="ti ti-download"></i> Download CSV template</button>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPT MODAL -->
+<div class="overlay" id="receiptModal" style="display:none" onclick="closeIfOverlay(event,'receiptModal')">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3><i class="ti ti-receipt" style="color:var(--accent)"></i> &nbsp;Receipt</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm btn-green" onclick="printReceipt()"><i class="ti ti-printer"></i> Print</button>
+        <button class="btn btn-sm" onclick="closeModal('receiptModal')"><i class="ti ti-x"></i></button>
+      </div>
+    </div>
+    <div class="modal-body" style="padding:16px" id="printArea">
+      <div class="receipt-wrap" id="receiptContent"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal('receiptModal')">Close</button>
+      <button class="btn btn-primary" onclick="printReceipt()"><i class="ti ti-printer"></i> Print Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+'use strict';
+// ══════════════════════════════════════════════════════════════════
+// ELECTRO STOCK — JavaScript
+// Server file is the ONE source of truth. localStorage NOT used.
+// ══════════════════════════════════════════════════════════════════
+
+const SERVER = 'http://localhost:5050';
+
+// ── IN-MEMORY DATA ────────────────────────────────────────────────
+let items   = [];
+let history = [];
+let sales   = [];
+let settings = {
+  shopName:'My Electrical Shop', addr1:'No. 1, Main Street', addr2:'Colombo',
+  phone:'011 000 0000', email:'', footer:'Thank you for your purchase!',
+  prefix:'INV-', startNo:1001, currency:'Rs.', reportEmail:'',
+  sysName:'Electro Stock', logoData:'', accent:'#d4501a', bg:'#f5f4f0', surface:'#ffffff',
+  categories:['Breakers','Cables & Wires','Switches','Sockets & Outlets','Conduits & Fittings','Transformers','LEDs & Bulbs','Capacitors','Relays','Fuses','Connectors & Lugs','Meters & Testers','Distribution Boards','Other'],
+  license:null,
+  permissions:{reportDamage:true, viewPrice:true, exportData:true, viewNotes:true},
+  users:[]
+};
+let cart        = [];
+let sortCol     = 'name', sortDir = 1;
+let editId      = null, moveId = null, moveType = 'out', histViewId = null;
+let syncConnected = false;
+let lastSyncTime  = null;
+let syncLog       = [];
+let bgSyncTimer   = null;
+let currentUser   = null;   // {username, role}
+
+// ══════════════════════════════════════════════════════════════════
+// SYNC BACKEND — "Local Python Server" (default, unchanged) or an
+// optional "GitHub Repository" backend that lets multiple laptops
+// share the same data over the internet with no local server needed.
+// Which backend THIS device uses, and the GitHub connection details,
+// are stored in this browser's own localStorage — never hardcoded,
+// never part of the synced inventory data itself.
+// ══════════════════════════════════════════════════════════════════
+function getSyncMode(){ return localStorage.getItem('es_sync_mode')||'github'; }
+function setSyncModeLS(m){ localStorage.setItem('es_sync_mode', m); }
+function getGithubConfig(){
+  return {
+    owner:  localStorage.getItem('es_gh_owner')  || '',
+    repo:   localStorage.getItem('es_gh_repo')   || '',
+    path:   localStorage.getItem('es_gh_path')   || 'electro_stock_data.json',
+    branch: localStorage.getItem('es_gh_branch') || 'main',
+    token:  localStorage.getItem('es_gh_token')  || ''
+  };
+}
+function setGithubConfig(cfg){
+  localStorage.setItem('es_gh_owner',  cfg.owner  || '');
+  localStorage.setItem('es_gh_repo',   cfg.repo   || '');
+  localStorage.setItem('es_gh_path',   cfg.path   || 'electro_stock_data.json');
+  localStorage.setItem('es_gh_branch', cfg.branch || 'main');
+  // Token is a per-device secret credential — only overwrite it if a new one was actually typed.
+  if(cfg.token) localStorage.setItem('es_gh_token', cfg.token);
+}
+let ghSha      = null;  // last-known GitHub blob sha — used to detect concurrent edits
+let localMtime = null;  // last-known local-file mtime — same purpose, local-server mode
+
+function b64EncodeUnicode(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64DecodeUnicode(str){ return decodeURIComponent(escape(atob(str))); }
+function ghContentsUrl(cfg, withRef){
+  const encodedPath = cfg.path.split('/').map(encodeURIComponent).join('/');
+  return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${encodedPath}`+(withRef?`?ref=${encodeURIComponent(cfg.branch)}`:'');
+}
+async function ghLoad(){
+  const cfg=getGithubConfig();
+  if(!cfg.owner||!cfg.repo||!cfg.path) return {ok:false, error:'GitHub repository is not configured yet.'};
+  const headers={Accept:'application/vnd.github+json'};
+  if(cfg.token) headers['Authorization']='Bearer '+cfg.token;
+  try{
+    const r=await fetch(ghContentsUrl(cfg,true),{headers, signal:AbortSignal.timeout(8000)});
+    if(r.status===404){ ghSha=null; return {ok:true, data:null}; }
+    if(!r.ok){ let t=''; try{t=(await r.json()).message||'';}catch(e){} return {ok:false, error:`GitHub error ${r.status}${t?': '+t:''}`}; }
+    const d=await r.json();
+    ghSha=d.sha;
+    const jsonStr=b64DecodeUnicode((d.content||'').replace(/\n/g,''));
+    return {ok:true, data:JSON.parse(jsonStr)};
+  }catch(e){ return {ok:false, error:e.message}; }
+}
+async function ghSave(dataObj){
+  const cfg=getGithubConfig();
+  if(!cfg.owner||!cfg.repo||!cfg.path) return {ok:false, error:'GitHub repository is not configured yet.'};
+  if(!cfg.token) return {ok:false, error:'A GitHub personal access token is required to save (enter it in Settings).'};
+  const headers={Accept:'application/vnd.github+json','Authorization':'Bearer '+cfg.token,'Content-Type':'application/json'};
+  const body={
+    message: 'Electro Stock data update — '+new Date().toISOString(),
+    content: b64EncodeUnicode(JSON.stringify(dataObj, null, 2)),
+    branch: cfg.branch
+  };
+  if(ghSha) body.sha=ghSha;
+  try{
+    const r=await fetch(ghContentsUrl(cfg,false),{method:'PUT',headers,body:JSON.stringify(body),signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(r.ok){ ghSha=d.content.sha; return {ok:true}; }
+    if(r.status===409 || (d.message&&/sha/i.test(d.message))){
+      return {ok:false, conflict:true, error:'Someone else saved changes to GitHub since this device last loaded the data.'};
+    }
+    return {ok:false, error:d.message||('GitHub error '+r.status)};
+  }catch(e){ return {ok:false, error:e.message}; }
+}
+// Loads the latest data from whichever backend this device is set to use.
+// Returns {ok, data} where data is null for a brand-new/empty file.
+async function loadRemoteData(){
+  if(getSyncMode()==='github'){
+    const res=await ghLoad();
+    if(res.ok) syncConnected=true;
+    return res;
+  }
+  try{
+    const r=await fetch(SERVER+'/load',{signal:AbortSignal.timeout(8000)});
+    const d=await r.json();
+    if(d.ok&&d.data){
+      try{ const sr=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)}); const sd=await sr.json(); if(sd.ok&&sd.mtime!=null) localMtime=sd.mtime; }catch(e){}
+      syncConnected=true;
+      return {ok:true, data:d.data};
+    } else if(!d.ok && d.error && d.error.includes('not found')){
+      syncConnected=true;
+      return {ok:true, data:null};
+    } else {
+      return {ok:false, error:d.error||'Unknown error'};
+    }
+  }catch(e){ return {ok:false, error:e.message}; }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LICENSE — verified entirely in the browser using a public/private
+// keypair (ECDSA, P-256 curve). No server, no Cloudflare Worker, no
+// secret of any kind lives here — that's the whole point of public-
+// key signing: this PUBLIC key can only CHECK a signature, it can
+// never CREATE one, so it's genuinely safe to keep in plain view.
+//
+// License keys are issued using license_generator.py, which holds
+// the matching PRIVATE key (license_private_key.pem) — that file
+// never leaves the machine that issues licenses, and never appears
+// anywhere in this codebase.
+//
+// Format of a license key string:
+//   base64url(payloadJSON) + "." + base64url(rawSignature, 64 bytes)
+// See SECURITY_NOTES.md for full details.
+// ══════════════════════════════════════════════════════════════════
+const LICENSE_PUBLIC_KEY_B64 = 'BPcbk1/BSBeCJG+usvx9wTcNDfWuanhHX1iaQboleVmPXfdZUfNs+M/OwgPrL8bjiZbH9MxmxBd74wgxdGGkDoc='; // paste the public key from license_generator.py here
+
+function b64urlToBytes(b64url){
+  let s=b64url.replace(/-/g,'+').replace(/_/g,'/');
+  while(s.length%4) s+='=';
+  const bin=atob(s);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+function b64ToBytes(b64){
+  const bin=atob(b64);
+  const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+
+let _licensePublicKeyPromise=null;
+function getLicensePublicKey(){
+  if(!_licensePublicKeyPromise){
+    _licensePublicKeyPromise=crypto.subtle.importKey(
+      'raw', b64ToBytes(LICENSE_PUBLIC_KEY_B64),
+      {name:'ECDSA', namedCurve:'P-256'}, false, ['verify']
+    );
+  }
+  return _licensePublicKeyPromise;
+}
+
+async function verifyLicenseKey(keyStr){
+  if(!LICENSE_PUBLIC_KEY_B64) return {valid:false, reason:'This system has no license public key configured yet. See SECURITY_NOTES.md.'};
+  if(!keyStr || keyStr.indexOf('.')===-1) return {valid:false, reason:'Malformed license key.'};
+  const parts=keyStr.trim().split('.');
+  if(parts.length!==2) return {valid:false, reason:'Malformed license key.'};
+  const [payloadB64, sigB64]=parts;
+
+  let payload;
+  try{
+    payload=JSON.parse(new TextDecoder('utf-8').decode(b64urlToBytes(payloadB64)));
+  }catch(e){
+    return {valid:false, reason:'Could not read license payload.'};
+  }
+
+  let sigBytes;
+  try{ sigBytes=b64urlToBytes(sigB64); }catch(e){ return {valid:false, reason:'Malformed signature.'}; }
+  if(sigBytes.length!==64) return {valid:false, reason:'Malformed signature.'};
+
+  try{
+    const publicKey=await getLicensePublicKey();
+    const ok=await crypto.subtle.verify(
+      {name:'ECDSA', hash:'SHA-256'}, publicKey, sigBytes,
+      new TextEncoder().encode(payloadB64)
+    );
+    if(!ok) return {valid:false, reason:'Invalid signature — license was not issued for this system.'};
+  }catch(e){
+    return {valid:false, reason:'Could not verify signature: '+e.message};
+  }
+
+  const expiry=payload.expiry;
+  if(expiry){
+    const expDt=new Date(expiry+'T23:59:59');
+    if(!isNaN(expDt.getTime()) && expDt<new Date()){
+      return {valid:false, reason:`License expired on ${expiry}. Contact your provider for renewal.`, payload};
+    }
+  }
+  return {valid:true, payload};
+}
+let licenseInfo = null;
+
+// ══════════════════════════════════════════════════════════════════
+// SAVE — always push to server, no localStorage
+// ══════════════════════════════════════════════════════════════════
+async function save(){
+  if(!syncConnected){
+    toast('Not connected — change not saved!','error');
+    return;
+  }
+  const data = { items, history, sales, settings, syncedAt: new Date().toISOString() };
+
+  if(getSyncMode()==='github'){
+    const res=await ghSave(data);
+    if(res.ok){
+      lastSyncTime=new Date().toLocaleTimeString('en-GB');
+      addSyncLog('Saved → GitHub ('+getGithubConfig().path+')');
+      updateSyncTime();
+    } else if(res.conflict){
+      addSyncLog('Save blocked — remote data changed', false);
+      const wantRefresh=confirm('⚠ '+res.error+'\n\nOK = load the latest data now (you\'ll need to redo your last change).\nCancel = save anyway (this WILL overwrite their change).');
+      if(wantRefresh){ await manualRefresh(); }
+      else { ghSha=null; const retry=await ghSave(data); if(retry.ok){ addSyncLog('Saved → GitHub (forced overwrite)'); toast('Saved (overwrote remote changes)','success'); } else { toast('Save failed: '+retry.error,'error'); } }
+    } else {
+      addSyncLog('Save failed: '+res.error, false);
+      toast('Save failed: '+res.error,'error');
+      syncConnected=false;
+      setSyncUI(false,'GitHub unreachable','','Could not reach GitHub. Changes will NOT be saved until reconnected.','red');
+    }
+    return;
+  }
+
+  // ── LOCAL PYTHON SERVER MODE ──
+  try{
+    const statusR=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)});
+    const statusD=await statusR.json();
+    if(statusD.ok && localMtime!=null && statusD.mtime!=null && statusD.mtime!==localMtime){
+      const wantRefresh=confirm('⚠ The data file was changed by another device since you last loaded it.\n\nOK = load the latest data now (you\'ll need to redo your last change).\nCancel = save anyway (this WILL overwrite their change).');
+      if(wantRefresh){ await manualRefresh(); return; }
+    }
+  }catch(e){ /* best-effort pre-check only */ }
+  try{
+    const r = await fetch(SERVER+'/save',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({data}),
+      signal: AbortSignal.timeout(5000)
+    });
+    const d = await r.json();
+    if(d.ok){
+      lastSyncTime = new Date().toLocaleTimeString('en-GB');
+      addSyncLog('Saved → '+d.saved_to.split('\\').pop().split('/').pop());
+      if(d.mtime!=null) localMtime=d.mtime;
+      updateSyncTime();
+    } else {
+      addSyncLog('Save failed: '+d.error, false);
+      toast('Save failed: '+d.error,'error');
+    }
+  } catch(e){
+    addSyncLog('Save error: '+e.message, false);
+    syncConnected = false;
+    setSyncUI(false,'Server offline','','Server went offline. Reconnecting…','red');
+    toast('Server offline — data NOT saved','error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════
+function getAvailable(item){ return Math.max(0, item.total - item.used); }
+function getStatus(item){
+  const av = getAvailable(item);
+  if(av <= 0)        return 'out';
+  if(av <= item.min) return 'low';
+  return 'ok';
+}
+function getPct(item){ return item.total>0 ? Math.round((getAvailable(item)/item.total)*100) : 0; }
+function nextId(arr){ return arr.length ? Math.max(...arr.map(i=>i.id))+1 : 1; }
+function fmtDate(ts){ return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function fmtDateTime(ts){ return new Date(ts).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function fmtMoney(n){ return settings.currency+' '+Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function nextReceiptNo(){ return settings.prefix+(settings.startNo+sales.length); }
+function warrantyExpiryTs(saleTs, months){
+  const d=new Date(saleTs);
+  d.setMonth(d.getMonth()+(months||0));
+  return d.getTime();
+}
+function saleWarrantyStatus(sale){
+  const withW=(sale.items||[]).filter(i=>i.warranty>0);
+  if(!withW.length) return {label:'—', cls:''};
+  const soonest=Math.min(...withW.map(i=>warrantyExpiryTs(sale.ts,i.warranty)));
+  const now=Date.now();
+  const daysLeft=(soonest-now)/86400000;
+  let cls='badge-ok', label='Until '+fmtDate(soonest);
+  if(daysLeft<0){cls='badge-out';label='Expired '+fmtDate(soonest);}
+  else if(daysLeft<=30){cls='badge-low';label='Expiring '+fmtDate(soonest);}
+  return {label, cls};
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.page-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
+  if(tab==='sale')     renderPicker();
+  if(tab==='sales')    renderSalesTable();
+  if(tab==='settings') loadSettings();
+  if(tab==='reports')  loadReportsTab();
+}
+function loadReportsTab(){
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  const el=document.getElementById('r_reportEmail');
+  if(el){
+    el.value=settings.reportEmail||'';
+    el.disabled=!isAdmin;
+  }
+  const note=document.getElementById('reportEmailUserNote');
+  if(note) note.textContent=isAdmin?'':'Only Admin can change the recipient address.';
+  renderReportPreview();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER — INVENTORY
+// ══════════════════════════════════════════════════════════════════
+function renderSummary(){
+  const total=items.length, out=items.filter(i=>getStatus(i)==='out').length;
+  const low=items.filter(i=>getStatus(i)==='low').length, ok=items.filter(i=>getStatus(i)==='ok').length;
+  const stockVal=items.reduce((s,i)=>s+(getAvailable(i)*(i.price||0)),0);
+  document.getElementById('summaryGrid').innerHTML=`
+    <div class="stat-card s-total"><div class="stat-label"><i class="ti ti-package"></i> Total items</div><div class="stat-value">${total}</div><div class="stat-sub">Value: ${fmtMoney(stockVal)}</div></div>
+    <div class="stat-card s-ok"><div class="stat-label"><i class="ti ti-circle-check"></i> In stock</div><div class="stat-value">${ok}</div><div class="stat-sub">Good availability</div></div>
+    <div class="stat-card s-low"><div class="stat-label"><i class="ti ti-alert-triangle"></i> Low stock</div><div class="stat-value">${low}</div><div class="stat-sub">Need restocking</div></div>
+    <div class="stat-card s-out"><div class="stat-label"><i class="ti ti-circle-x"></i> Out of stock</div><div class="stat-value">${out}</div><div class="stat-sub">Fully depleted</div></div>`;
+}
+function renderAlerts(){
+  const out=items.filter(i=>getStatus(i)==='out'), low=items.filter(i=>getStatus(i)==='low');
+  let h='';
+  if(out.length) h+=`<div class="alert-banner critical"><i class="ti ti-circle-x"></i><span><strong>${out.length} item(s) out of stock:</strong> ${out.slice(0,3).map(i=>i.name).join(', ')}${out.length>3?' …':''}</span></div>`;
+  if(low.length) h+=`<div class="alert-banner"><i class="ti ti-alert-triangle"></i><span><strong>${low.length} item(s) low stock:</strong> ${low.slice(0,3).map(i=>i.name).join(', ')}${low.length>3?' …':''}</span></div>`;
+  document.getElementById('alertBanners').innerHTML=h;
+}
+function getFiltered(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const ca=document.getElementById('catFilter').value;
+  const st=document.getElementById('statusFilter').value;
+  return items.filter(i=>{
+    const mQ=!q||i.name.toLowerCase().includes(q)||(i.sku||'').toLowerCase().includes(q)||i.category.toLowerCase().includes(q)||(i.notes||'').toLowerCase().includes(q);
+    return mQ&&(!ca||i.category===ca)&&(!st||getStatus(i)===st);
+  }).sort((a,b)=>{
+    let va,vb;
+    if(sortCol==='name'){va=a.name.toLowerCase();vb=b.name.toLowerCase();}
+    else if(sortCol==='category'){va=a.category.toLowerCase();vb=b.category.toLowerCase();}
+    else if(sortCol==='available'){va=getAvailable(a);vb=getAvailable(b);}
+    else if(sortCol==='used'){va=a.used;vb=b.used;}
+    else if(sortCol==='total'){va=a.total;vb=b.total;}
+    else{va=a.name.toLowerCase();vb=b.name.toLowerCase();}
+    return va<vb?-sortDir:va>vb?sortDir:0;
+  });
+}
+function sortBy(col){
+  if(sortCol===col) sortDir*=-1; else{sortCol=col;sortDir=1;}
+  renderTable();
+}
+function renderTable(){
+  const cats=[...new Set(items.map(i=>i.category))].sort();
+  const cf=document.getElementById('catFilter'),prev=cf.value;
+  cf.innerHTML='<option value="">All categories</option>'+cats.map(c=>`<option${c===prev?' selected':''}>${c}</option>`).join('');
+  ['name','category','available','used','total'].forEach(col=>{
+    const th=document.getElementById('th-'+col);if(!th)return;
+    th.classList.toggle('sorted',col===sortCol);
+    const ic=th.querySelector('.sort-icon');
+    if(ic) ic.className='sort-icon ti '+(col!==sortCol?'ti-selector':sortDir===1?'ti-arrow-up':'ti-arrow-down');
+  });
+  const filtered=getFiltered();
+  const tbody=document.getElementById('tableBody');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><i class="ti ti-package-off"></i><p>No items match your filters</p></div></td></tr>`;
+    document.getElementById('tableFooter').textContent='';return;
+  }
+  const sl={ok:'In stock',low:'Low stock',out:'Out of stock'};
+  tbody.innerHTML=filtered.map(item=>{
+    const av=getAvailable(item),st=getStatus(item),pct=getPct(item);
+    return `<tr>
+      <td><div class="item-name">${escHtml(item.name)}</div><div class="item-sku">${item.sku||'—'}${item.warranty?` &nbsp;·&nbsp; <i class="ti ti-shield-check"></i> ${item.warranty}mo warranty`:''}</div>${item.notes?`<div class="perm-notes" style="font-size:11px;color:var(--text3);font-style:italic">${escHtml(item.notes)}</div>`:''}</td>
+      <td><span class="badge badge-cat">${escHtml(item.category)}</span></td>
+      <td><div class="stock-bar-wrap"><div class="stock-bar"><div class="stock-bar-fill ${st}" style="width:${pct}%"></div></div><span class="stock-pct">${pct}%</span></div></td>
+      <td><span class="qty-num ${av===0?'qty-out':'qty-available'}">${av}</span><span class="qty-unit">${escHtml(item.unit||'pcs')}</span></td>
+      <td><span class="qty-num qty-used">${item.used}</span></td>
+      <td><span class="qty-num" style="color:var(--text2)">${item.total}</span></td>
+      <td><span style="font-family:var(--mono);font-size:13px;color:var(--text3)">${item.min}</span></td>
+      <td class="perm-price"><span style="font-size:12px;color:var(--text2)">${item.price?fmtMoney(item.price):'—'}</span></td>
+      <td><span class="badge badge-${st}">${st==='ok'?'<i class="ti ti-check"></i>':st==='low'?'<i class="ti ti-alert-triangle"></i>':'<i class="ti ti-x"></i>'} ${sl[st]}</span></td>
+      <td><div class="actions">
+        <button class="btn btn-sm" title="Quick sell" onclick="quickSell(${item.id})" style="color:var(--accent);border-color:var(--accent-border)"><i class="ti ti-shopping-cart-plus"></i></button>
+        <button class="btn btn-sm perm-damage" title="Report damage" onclick="showDamage(${item.id})" style="color:#b45309;border-color:#fde68a"><i class="ti ti-alert-triangle"></i></button>
+        <button class="btn btn-sm admin-only" title="Stock movement" onclick="showMove(${item.id})"><i class="ti ti-arrows-exchange"></i></button>
+        <button class="btn btn-sm" title="History" onclick="showHistory(${item.id})"><i class="ti ti-history"></i></button>
+        <button class="btn btn-sm admin-only" title="Edit" onclick="showEditItem(${item.id})"><i class="ti ti-edit"></i></button>
+        <button class="btn btn-sm btn-danger admin-only" title="Delete" onclick="deleteItem(${item.id})"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableFooter').innerHTML=`Showing <strong>${filtered.length}</strong> of <strong>${items.length}</strong> items`;
+}
+function render(){ renderSummary(); renderAlerts(); renderTable(); }
+
+// ══════════════════════════════════════════════════════════════════
+// ADD / EDIT ITEM
+// ══════════════════════════════════════════════════════════════════
+function populateCategorySelect(selected){
+  const sel=document.getElementById('f_cat');
+  const cats=(settings.categories&&settings.categories.length)?settings.categories:['Other'];
+  sel.innerHTML=cats.map(c=>`<option${c===selected?' selected':''}>${escHtml(c)}</option>`).join('');
+}
+function showAddItem(){
+  editId=null;
+  document.getElementById('itemModalTitle').textContent='Add item';
+  ['f_name','f_sku','f_notes'].forEach(id=>document.getElementById(id).value='');
+  populateCategorySelect(settings.categories&&settings.categories[0]);
+  document.getElementById('f_unit').value='pcs';
+  document.getElementById('f_total').value='';
+  document.getElementById('f_used').value='0';
+  document.getElementById('f_min').value='5';
+  document.getElementById('f_price').value='';
+  document.getElementById('f_warranty').value='';
+  document.getElementById('itemModal').style.display='flex';
+  setTimeout(()=>document.getElementById('f_name').focus(),100);
+}
+function showEditItem(id){
+  editId=id;
+  const item=items.find(i=>i.id===id);
+  document.getElementById('itemModalTitle').textContent='Edit item';
+  document.getElementById('f_name').value=item.name;
+  document.getElementById('f_sku').value=item.sku||'';
+  populateCategorySelect(item.category);
+  document.getElementById('f_unit').value=item.unit||'pcs';
+  document.getElementById('f_total').value=item.total;
+  document.getElementById('f_used').value=item.used;
+  document.getElementById('f_min').value=item.min;
+  document.getElementById('f_price').value=item.price||'';
+  document.getElementById('f_warranty').value=item.warranty||'';
+  document.getElementById('f_notes').value=item.notes||'';
+  document.getElementById('itemModal').style.display='flex';
+}
+async function saveItem(){
+  if(!requireAdmin())return;
+  const name=document.getElementById('f_name').value.trim();
+  const total=parseInt(document.getElementById('f_total').value)||0;
+  const used=Math.min(parseInt(document.getElementById('f_used').value)||0,total);
+  if(!name){toast('Item name is required','error');return;}
+  const data={name,sku:document.getElementById('f_sku').value.trim(),category:document.getElementById('f_cat').value,unit:document.getElementById('f_unit').value.trim()||'pcs',total,used,min:parseInt(document.getElementById('f_min').value)||0,price:parseFloat(document.getElementById('f_price').value)||0,warranty:parseInt(document.getElementById('f_warranty').value)||0,notes:document.getElementById('f_notes').value.trim()};
+  if(editId){items[items.findIndex(i=>i.id===editId)]={...items.find(i=>i.id===editId),...data};toast('Item updated','success');}
+  else{items.push({id:nextId(items),...data});toast('Item added','success');}
+  closeModal('itemModal');
+  render();
+  await save();
+}
+async function deleteItem(id){
+  if(!requireAdmin())return;
+  const item=items.find(i=>i.id===id);
+  if(!confirm(`Delete "${item.name}"?\nAll movement history for this item will also be deleted.`))return;
+  items=items.filter(i=>i.id!==id);
+  history=history.filter(h=>h.itemId!==id);
+  render();
+  toast('Item deleted');
+  await save();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STOCK MOVEMENT
+// ══════════════════════════════════════════════════════════════════
+function showMove(id){
+  moveId=id;
+  const item=items.find(i=>i.id===id);
+  document.getElementById('moveModalTitle').textContent=item.name;
+  document.getElementById('m_qty').value='';
+  document.getElementById('m_note').value='';
+  const av=getAvailable(item);
+  document.getElementById('moveStockSummary').innerHTML=`
+    <div class="stock-stat"><div class="stock-stat-val" style="color:var(--green)">${av}</div><div class="stock-stat-lbl">Available</div></div>
+    <div class="stock-stat"><div class="stock-stat-val" style="color:var(--text2)">${item.used}</div><div class="stock-stat-lbl">Used / Sold</div></div>
+    <div class="stock-stat"><div class="stock-stat-val">${item.total}</div><div class="stock-stat-lbl">Total stock</div></div>`;
+  setMoveType('out');
+  document.getElementById('moveModal').style.display='flex';
+  setTimeout(()=>document.getElementById('m_qty').focus(),100);
+}
+function setMoveType(type){
+  moveType=type;
+  document.getElementById('tabIn').className='move-tab'+(type==='in'?' active-in':'');
+  document.getElementById('tabOut').className='move-tab'+(type==='out'?' active-out':'');
+  document.getElementById('moveBtn').innerHTML=type==='in'?'<i class="ti ti-check"></i> Add to stock':'<i class="ti ti-check"></i> Remove from stock';
+}
+async function saveMove(){
+  if(!requireAdmin())return;
+  const qty=parseInt(document.getElementById('m_qty').value)||0;
+  const note=document.getElementById('m_note').value.trim();
+  if(qty<=0){toast('Enter a valid quantity','error');return;}
+  const idx=items.findIndex(i=>i.id===moveId);
+  const item=items[idx];
+  if(moveType==='out'){const av=getAvailable(item);if(qty>av){toast(`Only ${av} ${item.unit||'pcs'} available`,'error');return;}items[idx].used+=qty;}
+  else{items[idx].total+=qty;}
+  history.unshift({id:nextId(history),itemId:moveId,type:moveType,qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+  closeModal('moveModal');
+  render();
+  toast(moveType==='in'?`+${qty} added to stock`:`${qty} removed from stock`,'success');
+  await save();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DAMAGE REPORTING (available to all roles, unless disabled in Permissions)
+// ══════════════════════════════════════════════════════════════════
+let damageId=null;
+function showDamage(id){
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  if(!isAdmin && settings.permissions && settings.permissions.reportDamage===false){
+    toast('Damage reporting has been disabled by Admin.','error');return;
+  }
+  damageId=id;
+  const item=items.find(i=>i.id===id);
+  document.getElementById('damageModalTitle').textContent='Report damage — '+item.name;
+  document.getElementById('d_qty').value='';
+  document.getElementById('d_note').value='';
+  const av=getAvailable(item);
+  document.getElementById('damageStockSummary').innerHTML=`
+    <div class="stock-stat"><div class="stock-stat-val" style="color:var(--green)">${av}</div><div class="stock-stat-lbl">Available</div></div>
+    <div class="stock-stat"><div class="stock-stat-val" style="color:var(--text2)">${item.used}</div><div class="stock-stat-lbl">Used / Sold</div></div>
+    <div class="stock-stat"><div class="stock-stat-val">${item.total}</div><div class="stock-stat-lbl">Total stock</div></div>`;
+  document.getElementById('damageModal').style.display='flex';
+  setTimeout(()=>document.getElementById('d_qty').focus(),100);
+}
+async function saveDamage(){
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  if(!isAdmin && settings.permissions && settings.permissions.reportDamage===false){
+    toast('Damage reporting has been disabled by Admin.','error');return;
+  }
+  const qty=parseInt(document.getElementById('d_qty').value)||0;
+  const note=document.getElementById('d_note').value.trim();
+  if(qty<=0){toast('Enter a valid quantity','error');return;}
+  if(!note){toast('Please enter a reason for the damage','error');return;}
+  const idx=items.findIndex(i=>i.id===damageId);
+  const item=items[idx];
+  const av=getAvailable(item);
+  if(qty>av){toast(`Only ${av} ${item.unit||'pcs'} available`,'error');return;}
+  items[idx].used+=qty;
+  history.unshift({id:nextId(history),itemId:damageId,type:'damage',qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+  closeModal('damageModal');
+  render();
+  toast(`${qty} marked as damaged`,'success');
+  await save();
+}
+
+function showHistory(id){
+  histViewId=id;
+  const item=items.find(i=>i.id===id);
+  document.getElementById('historyTitle').textContent=`History — ${item.name}`;
+  const h=history.filter(x=>x.itemId===id);
+  document.getElementById('historyCount').textContent=`${h.length} record(s)`;
+  const list=document.getElementById('historyList');
+  if(!h.length){list.innerHTML=`<div class="history-empty"><i class="ti ti-history"></i>No movement recorded yet</div>`;return;}
+  list.innerHTML=h.map(x=>{
+    const isSale=x.type==='sale', isDamage=x.type==='damage';
+    const cls=isSale?'sale':isDamage?'damage':x.type;
+    const icon=isSale?'receipt':isDamage?'alert-triangle':x.type==='in'?'arrow-down':'arrow-up';
+    const label=isSale?'🧾 Sold: −'+x.qty:isDamage?'⚠ Damaged: −'+x.qty:x.type==='in'?'+ '+x.qty+' added':'− '+x.qty+' removed';
+    const labelCls=isSale?'h-type-sale':isDamage?'h-type-damage':x.type==='in'?'h-type-in':'h-type-out';
+    return `<div class="history-item">
+      <div class="h-icon ${cls}"><i class="ti ti-${icon}"></i></div>
+      <div class="h-main">
+        <div><span class="${labelCls}">${label}</span>${isSale&&x.receiptNo?` <span style="font-size:11px;color:var(--text3)">(${x.receiptNo})</span>`:''}${x.by?` <span style="font-size:11px;color:var(--text3)">by ${escHtml(x.by)}</span>`:''}</div>
+        <div class="h-note">${x.note||'No note'}</div>
+      </div>
+      <div class="h-date">${fmtDate(x.ts)}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('historyModal').style.display='flex';
+}
+async function clearItemHistory(){
+  if(!requireAdmin())return;
+  if(!confirm('Clear all movement history for this item?'))return;
+  history=history.filter(h=>h.itemId!==histViewId);
+  showHistory(histViewId);
+  toast('History cleared');
+  await save();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SALE & RECEIPT SYSTEM
+// ══════════════════════════════════════════════════════════════════
+function renderPicker(){
+  const q=(document.getElementById('pickerSearch').value||'').toLowerCase();
+  const list=items.filter(i=>!q||i.name.toLowerCase().includes(q)||(i.sku||'').toLowerCase().includes(q)||i.category.toLowerCase().includes(q));
+  const el=document.getElementById('pickerList');
+  document.getElementById('pickerCount').textContent=`${list.length} items`;
+  if(!list.length){el.innerHTML=`<div style="text-align:center;padding:24px;color:var(--text3);font-size:13px"><i class="ti ti-package-off" style="display:block;font-size:28px;margin-bottom:8px;opacity:.4"></i>No items found</div>`;return;}
+  el.innerHTML=list.map(item=>{
+    const av=getAvailable(item),st=getStatus(item);
+    return `<div class="picker-item ${st==='out'?'disabled':''}" onclick="addToCart(${item.id})">
+      <div class="picker-item-info">
+        <div class="picker-item-name">${escHtml(item.name)}</div>
+        <div class="picker-item-meta">${item.sku||''} ${item.sku&&item.category?'·':''} ${item.category}</div>
+      </div>
+      <div class="picker-item-stock">
+        <div class="picker-item-avail ${st}">${av} ${item.unit||'pcs'}</div>
+        <div class="picker-item-price">${item.price?fmtMoney(item.price):''}</div>
+      </div>
+      ${st!=='out'?`<button class="picker-add-btn" title="Add to cart" onclick="event.stopPropagation();addToCart(${item.id})"><i class="ti ti-plus"></i></button>`:'<span style="font-size:11px;color:var(--red);white-space:nowrap">Out of<br>stock</span>'}
+    </div>`;
+  }).join('');
+}
+function addToCart(id){
+  const item=items.find(i=>i.id===id);
+  const av=getAvailable(item);
+  if(av<=0){toast('This item is out of stock','error');return;}
+  const existing=cart.find(c=>c.id===id);
+  if(existing){if(existing.qty>=av){toast(`Max available: ${av} ${item.unit||'pcs'}`,'error');return;}existing.qty++;}
+  else{cart.push({id,name:item.name,sku:item.sku||'',unit:item.unit||'pcs',price:item.price||0,qty:1,warranty:item.warranty||0});}
+  renderCart();
+  toast(`${item.name} added`,'success');
+}
+function updateCartWarranty(id,val){
+  const c=cart.find(c=>c.id===id);
+  if(!c)return;
+  c.warranty=Math.max(0,parseInt(val)||0);
+}
+function quickSell(id){ switchTab('sale'); addToCart(id); }
+function removeFromCart(id){ cart=cart.filter(c=>c.id!==id); renderCart(); }
+function updateCartQty(id,newQty){
+  const item=items.find(i=>i.id===id);
+  const av=getAvailable(item);
+  const c=cart.find(c=>c.id===id);
+  if(!c)return;
+  if(newQty<=0){removeFromCart(id);return;}
+  if(newQty>av){toast(`Max available: ${av}`,'error');c.qty=av;}
+  else{c.qty=newQty;}
+  renderCart();
+}
+function clearCart(){ cart=[]; const dv=document.getElementById('discVal');if(dv)dv.value=''; renderCart(); }
+function renderCart(){
+  const countEl=document.getElementById('cartItemCount');
+  countEl.textContent=cart.length===0?'0 items':`${cart.length} item${cart.length>1?'s':''}`;
+  const body=document.getElementById('cartBody');
+  const sumEl=document.getElementById('cartSummary');
+  if(cart.length===0){body.innerHTML=`<div class="cart-empty"><i class="ti ti-shopping-cart-off"></i>No items added yet</div>`;sumEl.style.display='none';return;}
+  body.innerHTML=`<div class="cart-items">${cart.map(c=>{
+    const lineTotal=c.price*c.qty;
+    return `<div class="cart-item" style="flex-wrap:wrap">
+      <div style="flex:1;min-width:0"><div class="cart-item-name">${escHtml(c.name)}</div><div class="cart-item-sku">${c.price?fmtMoney(c.price)+' / '+c.unit:c.unit}</div></div>
+      <div class="cart-qty-ctrl">
+        <button class="cart-qty-btn" onclick="updateCartQty(${c.id},${c.qty-1})">−</button>
+        <input class="cart-qty-val" type="number" value="${c.qty}" min="1" onchange="updateCartQty(${c.id},parseInt(this.value)||1)">
+        <button class="cart-qty-btn" onclick="updateCartQty(${c.id},${c.qty+1})">+</button>
+      </div>
+      <div class="cart-item-total">${c.price?fmtMoney(lineTotal):'—'}</div>
+      <button class="cart-remove" onclick="removeFromCart(${c.id})" title="Remove"><i class="ti ti-x"></i></button>
+      <div style="width:100%;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);margin-top:2px">
+        <i class="ti ti-shield-check"></i> Warranty (months):
+        <input type="number" min="0" value="${c.warranty||0}" style="width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px" onchange="updateCartWarranty(${c.id},this.value)">
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+  sumEl.style.display='block';
+  recalcCart();
+}
+function recalcCart(){
+  const subtotal=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const dv=parseFloat(document.getElementById('discVal').value)||0;
+  const dt=document.getElementById('discType').value;
+  const discAmt=dt==='pct'?Math.min(subtotal,subtotal*dv/100):Math.min(subtotal,dv);
+  const total=subtotal-discAmt;
+  document.getElementById('csSubtotal').textContent=fmtMoney(subtotal);
+  document.getElementById('csDiscount').textContent='− '+fmtMoney(discAmt);
+  document.getElementById('csTotal').textContent=fmtMoney(total);
+}
+async function issueReceipt(){
+  if(cart.length===0){toast('Cart is empty','error');return;}
+  for(const c of cart){
+    const item=items.find(i=>i.id===c.id);
+    if(getAvailable(item)<c.qty){toast(`Not enough stock for: ${item.name} (available: ${getAvailable(item)})`,'error');return;}
+  }
+  const custName=document.getElementById('custName').value.trim()||'Walk-in Customer';
+  const custPhone=document.getElementById('custPhone').value.trim();
+  const payMethod=document.getElementById('payMethod').value;
+  const saleNote=document.getElementById('saleNote').value.trim();
+  const dv=parseFloat(document.getElementById('discVal').value)||0;
+  const dt=document.getElementById('discType').value;
+  const subtotal=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const discAmt=dt==='pct'?Math.min(subtotal,subtotal*dv/100):Math.min(subtotal,dv);
+  const total=subtotal-discAmt;
+  const receiptNo=nextReceiptNo();
+  const ts=Date.now();
+  cart.forEach(c=>{
+    const idx=items.findIndex(i=>i.id===c.id);
+    items[idx].used+=c.qty;
+    history.unshift({id:nextId(history),itemId:c.id,type:'sale',qty:c.qty,note:`Sold to ${custName}`,receiptNo,ts,by:currentUser?currentUser.username:''});
+  });
+  const saleRecord={id:nextId(sales),receiptNo,ts,customer:{name:custName,phone:custPhone},payMethod,note:saleNote,items:cart.map(c=>({...c})),subtotal,discAmt,discType:dt,discVal:dv,total};
+  sales.unshift(saleRecord);
+  buildAndShowReceipt(saleRecord);
+  cart=[];
+  document.getElementById('custName').value='';
+  document.getElementById('custPhone').value='';
+  document.getElementById('saleNote').value='';
+  document.getElementById('discVal').value='';
+  renderCart();
+  render();
+  await save();
+}
+function buildAndShowReceipt(sale){
+  document.getElementById('receiptContent').innerHTML=buildReceiptHTML(sale);
+  document.getElementById('receiptModal').style.display='flex';
+}
+function buildReceiptHTML(sale){
+  const s=settings;
+  const itemRows=sale.items.map(c=>`<tr><td>${escHtml(c.name)}${c.sku?'<br><span style="font-size:10px;color:#888">'+escHtml(c.sku)+'</span>':''}${c.warranty?'<br><span style="font-size:10px;color:#888">Warranty: '+c.warranty+' mo (until '+fmtDate(warrantyExpiryTs(sale.ts,c.warranty))+')</span>':''}</td><td>${c.qty} ${c.unit}</td><td>${c.price?fmtMoney(c.price):'—'}</td><td>${c.price?fmtMoney(c.price*c.qty):'—'}</td></tr>`).join('');
+  return `<div class="receipt-header"><div class="receipt-shop-name">${escHtml(s.shopName)}</div><div class="receipt-shop-sub">${escHtml(s.addr1)}${s.addr2?', '+escHtml(s.addr2):''}<br>${s.phone?'Tel: '+escHtml(s.phone):''}${s.email?' | '+escHtml(s.email):''}</div></div>
+    <div class="receipt-meta"><div><strong>Receipt No:</strong> <span class="receipt-no">${escHtml(sale.receiptNo)}</span></div><div><strong>Date:</strong> ${fmtDateTime(sale.ts)}</div></div>
+    <div class="receipt-cust"><strong>Customer:</strong> ${escHtml(sale.customer.name)}${sale.customer.phone?' | Tel: '+escHtml(sale.customer.phone):''} | <strong>Payment:</strong> ${escHtml(sale.payMethod)}${sale.note?'<br><strong>Note:</strong> '+escHtml(sale.note):''}</div>
+    <div class="receipt-items"><table><thead><tr><th style="width:40%">Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
+    <div class="receipt-totals"><div class="receipt-total-row"><span>Subtotal</span><span>${fmtMoney(sale.subtotal)}</span></div><div class="receipt-total-row" style="color:#888"><span>Discount${sale.discVal>0?' ('+sale.discVal+(sale.discType==='pct'?'%':' '+s.currency)+')':''}</span><span>− ${fmtMoney(sale.discAmt)}</span></div><div class="receipt-total-row grand"><span>TOTAL</span><span>${fmtMoney(sale.total)}</span></div></div>
+    <div class="receipt-footer">${escHtml(s.footer||'Thank you!')}<br><span style="font-size:10px;color:#aaa">*** Computer generated receipt ***</span></div>`;
+}
+function printReceipt(){ window.print(); }
+
+// ══════════════════════════════════════════════════════════════════
+// SALES TABLE
+// ══════════════════════════════════════════════════════════════════
+function getFilteredSales(){
+  const qEl=document.getElementById('salesSearchInput');
+  const q=qEl?qEl.value.toLowerCase().trim():'';
+  if(!q) return sales;
+  return sales.filter(s=>
+    (s.receiptNo||'').toLowerCase().includes(q) ||
+    (s.customer.name||'').toLowerCase().includes(q) ||
+    (s.customer.phone||'').toLowerCase().includes(q)
+  );
+}
+function renderSalesTable(){
+  const totalSales=sales.reduce((s,r)=>s+r.total,0);
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  const todaySales=sales.filter(r=>r.ts>=todayStart.getTime()).reduce((s,r)=>s+r.total,0);
+  document.getElementById('salesSummaryGrid').innerHTML=`
+    <div class="stat-card s-total"><div class="stat-label"><i class="ti ti-receipt"></i> Total sales</div><div class="stat-value">${sales.length}</div><div class="stat-sub">All transactions</div></div>
+    <div class="stat-card s-ok"><div class="stat-label"><i class="ti ti-cash"></i> Total revenue</div><div class="stat-value" style="font-size:18px">${fmtMoney(totalSales)}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card s-low"><div class="stat-label"><i class="ti ti-calendar"></i> Today</div><div class="stat-value" style="font-size:18px">${fmtMoney(todaySales)}</div><div class="stat-sub">Today's revenue</div></div>`;
+  const tbody=document.getElementById('salesTableBody');
+  const filtered=getFilteredSales();
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><i class="ti ti-receipt-off"></i><p>No sales match</p></div></td></tr>`;document.getElementById('salesFooter').innerHTML='';return;}
+  tbody.innerHTML=filtered.map(s=>{
+    const w=saleWarrantyStatus(s);
+    return `<tr>
+    <td><span style="font-family:var(--mono);font-weight:600;color:var(--accent)">${escHtml(s.receiptNo)}</span></td>
+    <td><span style="font-size:12px">${fmtDateTime(s.ts)}</span></td>
+    <td><div style="font-weight:500">${escHtml(s.customer.name)}</div>${s.customer.phone?`<div style="font-size:11px;color:var(--text3)">${escHtml(s.customer.phone)}</div>`:''}</td>
+    <td><span style="font-size:12px">${s.items.length} item${s.items.length>1?'s':''}: ${s.items.map(i=>escHtml(i.name)).join(', ').substring(0,40)}${s.items.map(i=>i.name).join(', ').length>40?'…':''}</span></td>
+    <td><span class="badge badge-cat">${escHtml(s.payMethod)}</span></td>
+    <td><span style="font-family:var(--mono);font-size:12px;color:var(--green)">${s.discAmt>0?'− '+fmtMoney(s.discAmt):'—'}</span></td>
+    <td><span style="font-family:var(--mono);font-weight:600">${fmtMoney(s.total)}</span></td>
+    <td>${w.cls?`<span class="badge ${w.cls}" style="font-size:10px">${w.label}</span>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</td>
+    <td><div class="actions">
+      <button class="btn btn-sm btn-green" onclick="reprintReceipt(${s.id})" title="Reprint"><i class="ti ti-printer"></i></button>
+      <button class="btn btn-sm btn-danger admin-only" onclick="deleteSale(${s.id})" title="Delete"><i class="ti ti-trash"></i></button>
+    </div></td>
+  </tr>`;}).join('');
+  document.getElementById('salesFooter').innerHTML=`<strong>${filtered.length}</strong> of <strong>${sales.length}</strong> sales shown | Total: <strong>${fmtMoney(totalSales)}</strong>`;
+}
+function reprintReceipt(id){ const sale=sales.find(s=>s.id===id); if(sale) buildAndShowReceipt(sale); }
+async function deleteSale(id){
+  if(!requireAdmin())return;
+  if(!confirm('Delete this sale record?\nNote: stock will NOT be restored.'))return;
+  sales=sales.filter(s=>s.id!==id);
+  renderSalesTable();
+  toast('Sale deleted');
+  await save();
+}
+async function saveReportEmail(){
+  if(!requireAdmin())return;
+  const v=(document.getElementById('r_reportEmail').value||'').trim();
+  settings.reportEmail=v;
+  toast('Recipient email saved','success');
+  await save();
+}
+async function savePermissions(){
+  if(!requireAdmin())return;
+  settings.permissions={
+    reportDamage: document.getElementById('p_reportDamage').checked,
+    viewPrice: document.getElementById('p_viewPrice').checked,
+    exportData: document.getElementById('p_exportData').checked,
+    viewNotes: document.getElementById('p_viewNotes').checked
+  };
+  applyPermissions();
+  toast('Permissions saved','success');
+  await save();
+}
+function pad(str,len){ str=String(str); return str.length>=len?str.slice(0,len-1)+'…':str+' '.repeat(len-str.length); }
+
+function reportData(){
+  const today=new Date();
+  const dateStr=today.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
+  const todaySales=sales.filter(s=>s.ts>=todayStart.getTime());
+  const todayRevenue=todaySales.reduce((s,r)=>s+r.total,0);
+  const total=items.length, out=items.filter(i=>getStatus(i)==='out'), low=items.filter(i=>getStatus(i)==='low');
+  const stockVal=items.reduce((s,i)=>s+(getAvailable(i)*(i.price||0)),0);
+  return {dateStr,todaySales,todayRevenue,total,out,low,stockVal};
+}
+
+// ── HTML TABLE VERSION (preview + clipboard copy — pastes as a real table into Gmail/Outlook) ──
+function buildReportHTML(){
+  const d=reportData();
+  const summaryRows=`
+    <tr><td>Total items</td><td>${d.total}</td></tr>
+    <tr><td>Stock value</td><td>${fmtMoney(d.stockVal)}</td></tr>
+    <tr><td>Low stock items</td><td>${d.low.length}</td></tr>
+    <tr><td>Out of stock items</td><td>${d.out.length}</td></tr>
+    <tr><td>Sales today</td><td>${d.todaySales.length}</td></tr>
+    <tr><td>Revenue today</td><td>${fmtMoney(d.todayRevenue)}</td></tr>`;
+  const itemRows=items.map(i=>`<tr><td>${escHtml(i.name)}</td><td>${escHtml(i.category||'')}</td><td>${getAvailable(i)}</td><td>${i.used}</td><td>${i.total}</td><td>${escHtml(i.unit||'pcs')}</td></tr>`).join('');
+  const saleRows=d.todaySales.length? d.todaySales.map(s=>`<tr><td>${escHtml(s.receiptNo)}</td><td>${new Date(s.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${escHtml(s.customer.name)}</td><td>${escHtml(s.items.map(i=>i.qty+'x '+i.name).join(', '))}</td><td>${fmtMoney(s.total)}</td></tr>`).join('') : '<tr><td colspan="5">No sales recorded today</td></tr>';
+
+  return `<div>
+    <h2 style="margin:0 0 2px">${escHtml(settings.sysName||'Electro Stock')} — Daily Summary Report</h2>
+    <div style="color:#666;font-size:13px;margin-bottom:14px">${escHtml(settings.shopName||'')} &nbsp;|&nbsp; ${d.dateStr}</div>
+    <table class="report-table"><caption>Overview</caption><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>${summaryRows}</tbody></table>
+    <table class="report-table"><caption>Inventory — Available / Used / Total</caption><thead><tr><th>Item</th><th>Category</th><th>Available</th><th>Used</th><th>Total</th><th>Unit</th></tr></thead><tbody>${itemRows}</tbody></table>
+    <table class="report-table"><caption>Today's Sales</caption><thead><tr><th>Ref. No.</th><th>Time</th><th>Customer</th><th>Items</th><th>Total</th></tr></thead><tbody>${saleRows}</tbody></table>
+    <div style="color:#999;font-size:11px;margin-top:6px">Generated automatically by ${escHtml(settings.sysName||'Electro Stock')}.</div>
+  </div>`;
+}
+function renderReportPreview(){
+  const box=document.getElementById('reportPreviewBox');
+  if(box) box.innerHTML=buildReportHTML();
+}
+async function copyReportTable(){
+  const html=buildReportHTML();
+  const plain=buildSummaryReportTextTable();
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      const item=new ClipboardItem({
+        'text/html': new Blob([html],{type:'text/html'}),
+        'text/plain': new Blob([plain],{type:'text/plain'})
+      });
+      await navigator.clipboard.write([item]);
+    } else {
+      await navigator.clipboard.writeText(plain);
+    }
+    toast('Report copied — paste it into Gmail, Outlook, or Word','success');
+  }catch(e){
+    toast('Could not copy automatically — try again or use Send via Email','error');
+  }
+}
+
+// ── PLAIN-TEXT ALIGNED TABLE VERSION (for mailto: — email clients only accept plain text there) ──
+function buildSummaryReportTextTable(){
+  const d=reportData();
+  let t = `${settings.sysName||'Electro Stock'} — Daily Summary Report\n`;
+  t += `${settings.shopName||''}\n`;
+  t += `Date: ${d.dateStr}\n`;
+  t += `${'='.repeat(64)}\n\n`;
+
+  t += `OVERVIEW\n`;
+  t += `Total items: ${d.total}   Stock value: ${fmtMoney(d.stockVal)}   Low: ${d.low.length}   Out: ${d.out.length}\n`;
+  t += `Sales today: ${d.todaySales.length}   Revenue today: ${fmtMoney(d.todayRevenue)}\n\n`;
+
+  t += `INVENTORY\n`;
+  t += pad('ITEM',26)+pad('CATEGORY',16)+pad('AVAIL',7)+pad('USED',7)+pad('TOTAL',6)+`\n`;
+  t += '-'.repeat(64)+`\n`;
+  items.forEach(i=>{
+    t += pad(i.name,26)+pad(i.category||'',16)+pad(String(getAvailable(i)),7)+pad(String(i.used),7)+pad(String(i.total),6)+`\n`;
+  });
+  t += `\n`;
+
+  t += `TODAY'S SALES\n`;
+  if(d.todaySales.length){
+    t += pad('REF NO.',12)+pad('TIME',8)+pad('CUSTOMER',18)+pad('TOTAL',10)+`\n`;
+    t += '-'.repeat(48)+`\n`;
+    d.todaySales.forEach(s=>{
+      t += pad(s.receiptNo,12)+pad(new Date(s.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),8)+pad(s.customer.name,18)+pad(fmtMoney(s.total),10)+`\n`;
+    });
+  } else {
+    t += `(no sales recorded today)\n`;
+  }
+  t += `\n${'='.repeat(64)}\nGenerated automatically by ${settings.sysName||'Electro Stock'}.`;
+  return t;
+}
+function sendSummaryReport(){
+  const to=(settings.reportEmail||'').trim();
+  if(!to){toast('Set a recipient email above first','error');return;}
+  const body=buildSummaryReportTextTable();
+  const subject=`Daily Stock Summary — ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${settings.shopName||settings.sysName||'Electro Stock'}`;
+  let mailBody=body;
+  if(mailBody.length>1800){
+    mailBody=mailBody.slice(0,1750)+`\n\n...(truncated — use "Copy formatted table" for the full report)`;
+  }
+  const url=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailBody)}`;
+  window.location.href=url;
+  toast('Opening your email app…','success');
+}
+
+function exportSalesCSV(){
+  const headers=['Reference No','Date','Customer','Phone','Items','Payment','Subtotal','Discount','Total','Warranty Status'];
+  const rows=sales.map(s=>[s.receiptNo,fmtDateTime(s.ts),s.customer.name,s.customer.phone||'',s.items.map(i=>i.qty+'x '+i.name+(i.warranty?' ('+i.warranty+'mo warranty)':'')).join('; '),s.payMethod,s.subtotal,s.discAmt,s.total,saleWarrantyStatus(s).label]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=`sales_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  toast('Sales exported','success');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════════════════
+function loadSettings(){
+  if(!currentUser || currentUser.role!=='admin') return; // settings tab is admin-only anyway
+  ['shopName','addr1','addr2','phone','email','footer','prefix','startNo','currency'].forEach(f=>{
+    const el=document.getElementById('s_'+f);if(el)el.value=settings[f]||'';
+  });
+  const dfEl=document.getElementById('s_dataFile');
+  if(dfEl) dfEl.value='';  // path lives on server, not here
+  const perm=settings.permissions||{};
+  const pd=document.getElementById('p_reportDamage'); if(pd) pd.checked=perm.reportDamage!==false;
+  const pv=document.getElementById('p_viewPrice'); if(pv) pv.checked=perm.viewPrice!==false;
+  const pe=document.getElementById('p_exportData'); if(pe) pe.checked=perm.exportData!==false;
+  const pn=document.getElementById('p_viewNotes'); if(pn) pn.checked=perm.viewNotes!==false;
+  const sn2=document.getElementById('s_sysName'); if(sn2) sn2.value=settings.sysName||'Electro Stock';
+  const ac=document.getElementById('s_accent'); if(ac) ac.value=settings.accent||'#d4501a';
+  const bgc=document.getElementById('s_bg'); if(bgc) bgc.value=settings.bg||'#f5f4f0';
+  const sfc=document.getElementById('s_surface'); if(sfc) sfc.value=settings.surface||'#ffffff';
+  renderSyncModeUI();
+  const lp=document.getElementById('logoPreview');
+  if(lp){
+    lp.innerHTML = settings.logoData ? `<img src="${settings.logoData}">` : '<i class="ti ti-bolt" style="font-size:22px;color:var(--text3)"></i>';
+    lp.dataset.logo = settings.logoData||'';
+  }
+  renderUsers();
+  renderLicenseInfo();
+  renderCategories();
+}
+async function saveSettings(){
+  if(!requireAdmin())return;
+  ['shopName','addr1','addr2','phone','email','footer','prefix','currency'].forEach(f=>{
+    const el=document.getElementById('s_'+f);if(el)settings[f]=el.value.trim();
+  });
+  const sn=parseInt(document.getElementById('s_startNo').value);
+  if(sn>0) settings.startNo=sn;
+  toast('Settings saved','success');
+  await save();
+}
+async function resetAll(){
+  if(!requireAdmin())return;
+  if(!confirm('Reset ALL data?\nThis will delete ALL items, sales, and history from the server file.\nUsers, branding, and license stay unchanged.\n\nThis CANNOT be undone.'))return;
+  items=[];history=[];sales=[];
+  render();renderSalesTable();loadSettings();
+  toast('All data reset');
+  await save();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ══════════════════════════════════════════════════════════════════
+function showImport(){document.getElementById('importModal').style.display='flex';}
+function dragOver(e){e.preventDefault();document.getElementById('importArea').style.borderColor='var(--accent)';}
+function dropFile(e){e.preventDefault();document.getElementById('importArea').style.borderColor='';const f=e.dataTransfer.files[0];if(f)processCSV(f);}
+function handleCSV(e){const f=e.target.files[0];if(f)processCSV(f);e.target.value='';}
+function processCSV(file){
+  if(!requireAdmin())return;
+  Papa.parse(file,{header:true,skipEmptyLines:true,dynamicTyping:true,
+    complete:async function(res){
+      let added=0,skipped=0;
+      res.data.forEach(row=>{
+        const name=String(row.name||row.Name||'').trim();
+        if(!name){skipped++;return;}
+        items.push({id:nextId(items),name,sku:String(row.sku||row.SKU||'').trim(),category:String(row.category||row.Category||'Other').trim(),unit:String(row.unit||row.Unit||'pcs').trim(),total:parseInt(row.total||row.Total)||0,used:parseInt(row.used||row.Used)||0,min:parseInt(row.min_stock||row.min||row.Min)||5,price:parseFloat(row.price||row.Price)||0,notes:String(row.notes||row.Notes||'').trim()});
+        added++;
+      });
+      render();closeModal('importModal');
+      toast(`${added} item(s) imported${skipped?' ('+skipped+' skipped)':''}`, 'success');
+      await save();
+    },
+    error:function(){toast('Error reading CSV file','error');}
+  });
+}
+function exportCSV(){
+  const headers=['Name','SKU','Category','Unit','Total','Used','Available','Min Stock','Unit Price','Notes','Status'];
+  const rows=items.map(i=>[i.name,i.sku||'',i.category,i.unit,i.total,i.used,getAvailable(i),i.min,i.price||0,i.notes||'',getStatus(i)==='ok'?'In Stock':getStatus(i)==='low'?'Low Stock':'Out of Stock']);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=`inventory_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  toast('Exported','success');
+}
+function downloadTemplate(){
+  const csv='name,sku,category,unit,total,used,min_stock,price,notes\nCircuit Breaker 20A,CB-20A-001,Breakers,pcs,100,0,10,450,Havells brand\n';
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='inventory_template.csv';a.click();
+}
+function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('catFilter').value='';document.getElementById('statusFilter').value='';renderTable();}
+
+// ══════════════════════════════════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════════════════════════════════
+function closeModal(id){document.getElementById(id).style.display='none';}
+function closeIfOverlay(e,id){if(e.target.id===id)closeModal(id);}
+
+// ══════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg,type=''){
+  const t=document.getElementById('toast');
+  clearTimeout(toastTimer);
+  t.className='toast'+(type?' '+type:'');
+  t.innerHTML=(type==='success'?'<i class="ti ti-check"></i>':type==='error'?'<i class="ti ti-alert-circle"></i>':'')+(msg?' '+msg:'');
+  t.classList.add('show');
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') ['itemModal','moveModal','damageModal','historyModal','importModal','receiptModal'].forEach(closeModal);
+  if((e.ctrlKey||e.metaKey)&&e.key==='f'){e.preventDefault();document.getElementById('searchInput').focus();}
+});
+
+// ══════════════════════════════════════════════════════════════════
+// SYNC UI
+// ══════════════════════════════════════════════════════════════════
+function addSyncLog(msg,ok=true){
+  const ts=new Date().toLocaleTimeString('en-GB');
+  syncLog.unshift(`${ok?'✓':'✗'} [${ts}] ${msg}`);
+  if(syncLog.length>10) syncLog=syncLog.slice(0,10);
+  const el=document.getElementById('syncLog');
+  if(el) el.innerHTML=syncLog.map(l=>`<div style="color:${l.startsWith('✓')?'var(--green)':'var(--red)'}">${l}</div>`).join('');
+}
+function updateSyncTime(){
+  const tEl=document.getElementById('syncCardTime');
+  if(tEl&&lastSyncTime) tEl.textContent='Last sync: '+lastSyncTime;
+}
+function setSyncUI(connected,label,pathText,msgText,color){
+  syncConnected=connected;
+  const cols={green:'var(--green)',amber:'var(--amber)',red:'var(--red)',grey:'var(--text3)'};
+  const c=cols[color]||cols.grey;
+  const pill=document.getElementById('syncStatus');
+  const dot=document.getElementById('syncDot');
+  const lbl=document.getElementById('syncLabel');
+  if(pill){pill.style.display='flex';pill.style.borderColor=c;pill.style.color=c;}
+  if(dot) dot.style.background=c;
+  if(lbl) lbl.textContent=label;
+  const cdot=document.getElementById('syncCardDot');
+  const clbl=document.getElementById('syncCardLabel');
+  const cpath=document.getElementById('syncCardPath');
+  const ctime=document.getElementById('syncCardTime');
+  const cmsg=document.getElementById('syncCardMsg');
+  if(cdot) cdot.style.background=c;
+  if(clbl){clbl.textContent=label;clbl.style.color=c;}
+  if(cpath&&pathText!==null) cpath.textContent=pathText?'📁 '+pathText:'';
+  if(ctime&&lastSyncTime) ctime.textContent='Last sync: '+lastSyncTime;
+  if(cmsg&&msgText!==null) cmsg.innerHTML=msgText;
+}
+async function testConnection(){
+  toast('Testing connection…');
+  if(getSyncMode()==='github'){
+    const res=await ghLoad();
+    if(res.ok) toast('GitHub repository is reachable ✓','success');
+    else toast('GitHub error: '+res.error,'error');
+    return;
+  }
+  try{
+    const r=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(2000)});
+    const d=await r.json();
+    if(d.ok) toast('Server is reachable ✓','success');
+    else toast('Server error','error');
+  }catch(e){ toast('Server not reachable — start start_server.bat','error'); }
+}
+async function connectBackend(){
+  if(!requireAdmin())return;
+  const fp=(document.getElementById('s_dataFile').value||'').trim();
+  if(!fp){toast('Enter a file path first','error');return;}
+  try{
+    const r=await fetch(SERVER+'/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data_file:fp}),signal:AbortSignal.timeout(3000)});
+    const d=await r.json();
+    if(d.ok){
+      setSyncModeLS('local');
+      localMtime=null;
+      setSyncUI(true,'Connected — syncing',fp,'Path saved. Auto-saving active.','green');
+      addSyncLog('Path updated: '+fp);
+      toast('Path saved!','success');
+      await save();
+    }else{throw new Error(d.error);}
+  }catch(e){toast('Could not connect: '+e.message,'error');}
+}
+
+// ── Storage-location switcher (Settings tab, admin only) ──
+function renderSyncModeUI(){
+  const mode=getSyncMode();
+  const lb=document.getElementById('modeLocalBtn'), gb=document.getElementById('modeGithubBtn');
+  const lBlock=document.getElementById('localSyncBlock'), gBlock=document.getElementById('githubSyncBlock');
+  if(!lb) return;
+  lb.classList.toggle('btn-primary', mode==='local');
+  gb.classList.toggle('btn-primary', mode==='github');
+  lBlock.style.display = mode==='local' ? 'block':'none';
+  gBlock.style.display = mode==='github' ? 'block':'none';
+  const cfg=getGithubConfig();
+  const o=document.getElementById('s_gh_owner'); if(o) o.value=cfg.owner;
+  const rp=document.getElementById('s_gh_repo'); if(rp) rp.value=cfg.repo;
+  const p=document.getElementById('s_gh_path'); if(p) p.value=cfg.path;
+  const b=document.getElementById('s_gh_branch'); if(b) b.value=cfg.branch;
+}
+function switchSyncModeInSettings(mode){
+  // View toggle only — the actual backend switch happens on Connect below,
+  // so browsing this tab never silently repoints where data is saved.
+  const lb=document.getElementById('modeLocalBtn'), gb=document.getElementById('modeGithubBtn');
+  const lBlock=document.getElementById('localSyncBlock'), gBlock=document.getElementById('githubSyncBlock');
+  lb.classList.toggle('btn-primary', mode==='local');
+  gb.classList.toggle('btn-primary', mode==='github');
+  lBlock.style.display = mode==='local' ? 'block':'none';
+  gBlock.style.display = mode==='github' ? 'block':'none';
+}
+async function saveGithubConfigFromSettings(){
+  if(!requireAdmin())return;
+  const cfg={
+    owner:(document.getElementById('s_gh_owner').value||'').trim(),
+    repo:(document.getElementById('s_gh_repo').value||'').trim(),
+    path:(document.getElementById('s_gh_path').value||'').trim()||'electro_stock_data.json',
+    branch:(document.getElementById('s_gh_branch').value||'').trim()||'main',
+    token:(document.getElementById('s_gh_token').value||'').trim()
+  };
+  if(!cfg.owner||!cfg.repo){toast('Enter the repository owner and name first','error');return;}
+  setGithubConfig(cfg);
+  setSyncModeLS('github');
+  document.getElementById('s_gh_token').value='';
+  toast('Connecting to GitHub…');
+  ghSha=null;
+  const res=await loadRemoteData();
+  if(res.ok){
+    if(res.data){
+      items=res.data.items||[]; history=res.data.history||[]; sales=res.data.sales||[];
+      if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+    }
+    applyBranding(); render(); renderSalesTable(); loadSettings();
+    setSyncUI(true,'Syncing via GitHub ✓',cfg.owner+'/'+cfg.repo+' : '+cfg.path,'This device now saves to GitHub.','green');
+    addSyncLog('Switched this device to GitHub sync');
+    toast('Connected to GitHub — this device now syncs there','success');
+  }else{
+    toast('Could not connect: '+res.error,'error');
+    addSyncLog('GitHub connect failed: '+res.error,false);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOOT SEQUENCE — runs first, blocks app until server confirmed
+// ══════════════════════════════════════════════════════════════════
+function setStep(n,state,subText){
+  const step=document.getElementById('step'+n);
+  const icon=document.getElementById('icon'+n);
+  const sub=document.getElementById('sub'+n);
+  if(!step)return;
+  step.className='load-step'+(state==='wait'?'':' step-'+state);
+  step.style.opacity=state==='wait'?'0.4':'1';
+  if(sub&&subText!==null) sub.textContent=subText;
+  const icons={active:'<i class="ti ti-loader-2 spin"></i>',ok:'<i class="ti ti-circle-check"></i>',err:'<i class="ti ti-circle-x"></i>',wait:'<i class="ti ti-circle-dashed"></i>'};
+  if(icon) icon.innerHTML=icons[state]||icons.wait;
+}
+function showLoadError(msg){
+  const el=document.getElementById('loadError');
+  if(el){el.innerHTML='<strong>Error:</strong> '+msg;el.style.display='block';}
+  const rb=document.getElementById('retryBtn');
+  if(rb) rb.style.display='block';
+}
+function hideLoadError(){
+  const el=document.getElementById('loadError');if(el)el.style.display='none';
+  const rb=document.getElementById('retryBtn');if(rb)rb.style.display='none';
+}
+async function setupAndConnect(){
+  const fp=(document.getElementById('setupPath').value||'').trim();
+  if(!fp){alert('Please enter a file path.');return;}
+  hideLoadError();
+  try{
+    const r=await fetch(SERVER+'/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data_file:fp}),signal:AbortSignal.timeout(4000)});
+    const d=await r.json();
+    if(d.ok){document.getElementById('setupForm').style.display='none';bootSequence();}
+    else{showLoadError('Could not save path: '+d.error);}
+  }catch(e){showLoadError('Server not reachable. Is start_server.bat running? ('+e.message+')');}
+}
+// ── Boot-screen backend picker (shown before login; stored per device) ──
+function renderBootModeUI(){
+  const mode=getSyncMode();
+  const lbl=document.getElementById('bootModeLabel');
+  const localBtn=document.getElementById('bootModeLocalBtn');
+  const ghBtn=document.getElementById('bootModeGithubBtn');
+  const ghForm=document.getElementById('bootGithubForm');
+  const footnote=document.getElementById('bootFootnote');
+  if(!lbl) return;
+  lbl.textContent = mode==='github' ? 'GitHub Repository' : 'Local Python Server';
+  if(localBtn) localBtn.style.background = mode==='local' ? '#1a1916' : '#fff';
+  if(localBtn) localBtn.style.color = mode==='local' ? '#fff' : '#1a1916';
+  if(ghBtn) ghBtn.style.background = mode==='github' ? '#1a1916' : '#fff';
+  if(ghBtn) ghBtn.style.color = mode==='github' ? '#fff' : '#1a1916';
+  if(ghForm) ghForm.style.display = mode==='github' ? 'flex' : 'none';
+  if(footnote) footnote.innerHTML = mode==='github'
+    ? 'Data syncs directly with your GitHub repository — no local server needed.'
+    : 'Run <strong>start_server.bat</strong> once, or run <strong>Install_AutoStart.bat</strong> once so it starts itself hidden every login.';
+  if(mode==='github'){
+    const cfg=getGithubConfig();
+    const o=document.getElementById('bg_owner'); if(o) o.value=cfg.owner;
+    const rp=document.getElementById('bg_repo'); if(rp) rp.value=cfg.repo;
+    const p=document.getElementById('bg_path'); if(p) p.value=cfg.path;
+    const b=document.getElementById('bg_branch'); if(b) b.value=cfg.branch;
+  }
+}
+function setBootMode(m){
+  setSyncModeLS(m);
+  renderBootModeUI();
+  if(m==='local') bootSequence();
+}
+function saveBootGithubConfig(){
+  const cfg={
+    owner: (document.getElementById('bg_owner').value||'').trim(),
+    repo: (document.getElementById('bg_repo').value||'').trim(),
+    path: (document.getElementById('bg_path').value||'').trim() || 'electro_stock_data.json',
+    branch: (document.getElementById('bg_branch').value||'').trim() || 'main',
+    token: (document.getElementById('bg_token').value||'').trim()
+  };
+  if(!cfg.owner||!cfg.repo){ alert('Please enter at least the GitHub owner and repository name.'); return; }
+  setGithubConfig(cfg);
+  setSyncModeLS('github');
+  document.getElementById('bg_token').value='';
+  bootSequence();
+}
+
+// ── Connection profile — a small file that bundles this device's
+// backend settings (and optionally a starter admin login) so a new
+// user can load it instead of typing everything in by hand. Never
+// contains anything that must stay secret unless the person creating
+// it explicitly opts in (see the checkbox in Settings).
+let _pendingStarterAdmin=null;
+
+async function handleProfileFile(event){
+  const file=event.target.files && event.target.files[0];
+  event.target.value=''; // reset so re-selecting the same file re-triggers change
+  if(!file) return;
+  let profile;
+  try{
+    const text=await file.text();
+    profile=JSON.parse(text);
+  }catch(e){
+    alert('Could not read that file — make sure it\'s the .json connection profile you were given.');
+    return;
+  }
+  applyConnectionProfile(profile);
+}
+
+function applyConnectionProfile(profile){
+  if(!profile || (profile.mode!=='local' && profile.mode!=='github')){
+    alert('That file does not look like a valid connection profile.');
+    return;
+  }
+  if(profile.mode==='github'){
+    const g=profile.github||{};
+    if(!g.owner||!g.repo){ alert('That profile is missing the GitHub repository details.'); return; }
+    setGithubConfig({
+      owner: g.owner||'', repo: g.repo||'',
+      path: g.path||'electro_stock_data.json', branch: g.branch||'main',
+      token: g.token||'' // only set if the profile actually included one
+    });
+    setSyncModeLS('github');
+    if(!g.token){
+      toast('Profile loaded — enter your own personal access token below, then Save & Connect.');
+      renderBootModeUI();
+      const tokenField=document.getElementById('bg_token');
+      if(tokenField) tokenField.focus();
+      document.getElementById('bootModeDetails').open=true;
+      if(profile.starterAdmin && profile.starterAdmin.username) _pendingStarterAdmin=profile.starterAdmin;
+      return; // wait for them to supply a token before connecting
+    }
+  } else {
+    setSyncModeLS('local');
+    if(profile.local && profile.local.data_file){
+      // Best-effort: only works if the local server happens to already be
+      // reachable. If not, this is silently skipped — Local mode always
+      // needs the server running on this PC regardless of this file.
+      fetch(SERVER+'/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data_file:profile.local.data_file}),signal:AbortSignal.timeout(3000)}).catch(()=>{});
+    }
+  }
+  if(profile.starterAdmin && profile.starterAdmin.username) _pendingStarterAdmin=profile.starterAdmin;
+  renderBootModeUI();
+  bootSequence();
+}
+
+async function downloadConnectionProfile(){
+  const mode=getSyncMode();
+  const profile={mode};
+  if(mode==='github'){
+    const cfg=getGithubConfig();
+    if(!cfg.owner||!cfg.repo){ toast('Connect this device to GitHub first, then generate the profile.','error'); return; }
+    const includeToken=document.getElementById('profile_include_token').checked;
+    profile.github={owner:cfg.owner, repo:cfg.repo, path:cfg.path, branch:cfg.branch};
+    if(includeToken) profile.github.token=cfg.token;
+  } else {
+    let dataFile='';
+    try{
+      const r=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)});
+      const d=await r.json();
+      if(d.ok) dataFile=d.data_file||'';
+    }catch(e){ /* server not reachable — profile still generates, just without a path */ }
+    profile.local={data_file:dataFile};
+  }
+  const u=(document.getElementById('profile_admin_user').value||'').trim();
+  const p=document.getElementById('profile_admin_pass').value||'';
+  if(u && p) profile.starterAdmin={username:u, password:p};
+
+  const blob=new Blob([JSON.stringify(profile,null,2)], {type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='electro-stock-connection-profile.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Profile downloaded — send it to the new user.','success');
+}
+
+async function bootSequence(){
+  hideLoadError();
+  document.getElementById('setupForm').style.display='none';
+  renderBootModeUI();
+  const mode=getSyncMode();
+  setStep(1,'active', mode==='github' ? 'Connecting to GitHub...' : 'Connecting to http://localhost:5050...');
+  setStep(2,'wait',null);setStep(3,'wait',null);
+
+  if(mode==='github'){
+    const cfg=getGithubConfig();
+    if(!cfg.owner||!cfg.repo||!cfg.token){
+      setStep(1,'err','GitHub is not fully configured on this device');
+      showLoadError('Enter your GitHub repository details and a personal access token below, then click <strong>Save &amp; Connect</strong>.');
+      document.getElementById('bootModeDetails').open=true;
+      return;
+    }
+    setStep(1,'ok','GitHub configured ✓');
+    setStep(2,'active','Checking repository access...');
+    await new Promise(r=>setTimeout(r,250));
+    setStep(2,'ok','Repo: '+cfg.owner+'/'+cfg.repo+' @ '+cfg.branch+' ✓');
+    setStep(3,'active','Loading inventory data from GitHub...');
+    await new Promise(r=>setTimeout(r,250));
+    const res=await loadRemoteData();
+    if(!res.ok){
+      setStep(3,'err','Failed to load data: '+res.error);
+      showLoadError('Could not read data from GitHub: <strong>'+res.error+'</strong><br>Check the owner/repo/path/branch/token below, then click Retry.');
+      document.getElementById('bootModeDetails').open=true;
+      return;
+    }
+    if(res.data){
+      items=res.data.items||[]; history=res.data.history||[]; sales=res.data.sales||[];
+      if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+      setStep(3,'ok',`Loaded: ${items.length} items, ${sales.length} sales ✓`);
+      addSyncLog('Boot: loaded from GitHub ('+cfg.path+')');
+    } else {
+      items=[];history=[];sales=[];
+      setStep(3,'ok','New file — starting fresh ✓');
+      addSyncLog('Boot: new GitHub file, starting fresh');
+    }
+    syncConnected=true;
+    setSyncUI(true,'Syncing via GitHub ✓',cfg.owner+'/'+cfg.repo+' : '+cfg.path,'Auto-saving every change to GitHub.','green');
+  } else {
+    let dataFile='';
+    try{
+      const r=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)});
+      const d=await r.json();
+      if(d.ok){dataFile=d.data_file||'';setStep(1,'ok','Server online ✓');}
+      else{throw new Error('Server returned error');}
+    }catch(e){
+      setStep(1,'err','Cannot reach server: '+e.message);
+      showLoadError('The Python server is not running.<br>Double-click <strong>start_server.bat</strong> to start it, then click <strong>Retry Connection</strong> — or switch this device to GitHub sync below (no Python needed).<br><br>Keeps stopping on its own? Run <strong>Install_AutoStart.bat</strong> once (in the same folder) so the server restarts itself automatically and no one needs to babysit a window.');
+      return;
+    }
+
+    setStep(2,'active','Checking data file path...');
+    await new Promise(r=>setTimeout(r,300));
+    if(!dataFile){
+      setStep(2,'err','No data file path configured on server');
+      document.getElementById('setupForm').style.display='block';
+      return;
+    }
+    setStep(2,'ok','File path configured: '+dataFile.split('\\').pop().split('/').pop()+' ✓');
+
+    setStep(3,'active','Loading inventory data from file...');
+    await new Promise(r=>setTimeout(r,300));
+    const res=await loadRemoteData();
+    if(!res.ok){
+      setStep(3,'err','Failed to load data: '+res.error);
+      showLoadError('Could not read data file: <strong>'+res.error+'</strong><br>Check the file path in the server config, then click Retry.');
+      return;
+    }
+    if(res.data){
+      items=res.data.items||[]; history=res.data.history||[]; sales=res.data.sales||[];
+      if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+      setStep(3,'ok',`Loaded: ${items.length} items, ${sales.length} sales ✓`);
+      addSyncLog('Boot: loaded from '+dataFile.split('\\').pop().split('/').pop());
+    } else {
+      items=[];history=[];sales=[];
+      setStep(3,'ok','New file — starting fresh ✓');
+      addSyncLog('Boot: new file, starting fresh');
+    }
+    syncConnected=true;
+    setSyncUI(true,'Syncing ✓',dataFile,'Auto-saving every change to file.','green');
+  }
+
+  await new Promise(r=>setTimeout(r,400));
+  applyBranding();
+  startBgSync();
+  await gateOnLicense();
+}
+
+// Re-fetches the latest data from the current backend WITHOUT reloading the
+// page or logging the user out — this is what the "Refresh data" button and
+// the reconnect-after-conflict flow use.
+async function manualRefresh(){
+  const btn=document.getElementById('refreshBtn');
+  if(btn) btn.disabled=true;
+  toast('Fetching latest data…');
+  const res=await loadRemoteData();
+  if(res.ok){
+    if(res.data){
+      items=res.data.items||[]; history=res.data.history||[]; sales=res.data.sales||[];
+      if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+    }
+    applyBranding();
+    render(); renderSalesTable();
+    const settingsPage=document.getElementById('page-settings');
+    if(settingsPage&&settingsPage.classList.contains('active')) loadSettings();
+    const salePage=document.getElementById('page-sale');
+    if(salePage&&salePage.classList.contains('active')) renderPicker();
+    addSyncLog('Manual refresh — latest data loaded');
+    toast('Data refreshed','success');
+  } else {
+    addSyncLog('Manual refresh failed: '+res.error,false);
+    toast('Refresh failed: '+res.error,'error');
+  }
+  if(btn) btn.disabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LICENSE GATE → then LOGIN GATE → then open app
+// ══════════════════════════════════════════════════════════════════
+async function gateOnLicense(){
+  const ls=document.getElementById('loadingScreen');
+  const lic=document.getElementById('licenseScreen');
+  const result = settings.license && settings.license.key ? await verifyLicenseKey(settings.license.key) : {valid:false, reason:'No license key has been activated on this system.'};
+  licenseInfo = result.valid ? result.payload : null;
+  if(result.valid){
+    ls.style.display='none';
+    if(!(settings.users||[]).length){
+      document.getElementById('firstRunScreen').style.display='flex';
+      if(_pendingStarterAdmin){
+        const uEl=document.getElementById('fr_user'), pEl=document.getElementById('fr_pass'), p2El=document.getElementById('fr_pass2');
+        if(uEl) uEl.value=_pendingStarterAdmin.username||'';
+        if(pEl) pEl.value=_pendingStarterAdmin.password||'';
+        if(p2El) p2El.value=_pendingStarterAdmin.password||'';
+        const errEl=document.getElementById('firstRunErr');
+        if(errEl){ errEl.style.display='block'; errEl.style.color='var(--amber, #b45309)'; errEl.textContent='Pre-filled from your connection profile — please change this password right after signing in.'; }
+        _pendingStarterAdmin=null;
+      }
+      return;
+    }
+    const saved=readSession();
+    const stillValid=saved && (settings.users||[]).some(x=>x.username===saved.username && x.role===saved.role);
+    if(stillValid){
+      openApp(saved, {silent:true});
+    } else {
+      clearSession();
+      showLoginScreen();
+    }
+  } else {
+    ls.style.display='none';
+    lic.style.display='flex';
+    document.getElementById('licErr').style.display='block';
+    document.getElementById('licErr').textContent = result.reason || 'License is invalid.';
+  }
+}
+async function activateLicense(){
+  const key=(document.getElementById('licKeyInput').value||'').trim();
+  const errEl=document.getElementById('licErr');
+  if(!key){errEl.style.display='block';errEl.textContent='Please paste your license key.';return;}
+  const result = await verifyLicenseKey(key);
+  if(!result.valid){errEl.style.display='block';errEl.textContent=result.reason;return;}
+  settings.license = {key};
+  licenseInfo = result.payload;
+  await save();
+  document.getElementById('licenseScreen').style.display='none';
+  showLoginScreen();
+}
+function showLoginScreen(){
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginScreen').style.display='flex';
+  const sysNameEl=document.getElementById('loginSysName'); if(sysNameEl) sysNameEl.textContent=settings.sysName||'Electro Stock';
+  const iconEl=document.getElementById('loginLogoIcon');
+  if(iconEl) iconEl.innerHTML = settings.logoData ? `<img src="${settings.logoData}">` : '<i class="ti ti-bolt"></i>';
+  setTimeout(()=>document.getElementById('loginUser').focus(),100);
+}
+// SESSION — remembers who's logged in across a page refresh (sessionStorage:
+// cleared automatically when the browser tab/window is actually closed, so it
+// doesn't force a re-login on every refresh, but still isn't a permanent login).
+const SESSION_KEY='es_session';
+function saveSession(){
+  try{ sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentUser)); }catch(e){}
+}
+function clearSession(){
+  try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){}
+}
+function readSession(){
+  try{
+    const raw=sessionStorage.getItem(SESSION_KEY);
+    if(!raw) return null;
+    const parsed=JSON.parse(raw);
+    if(!parsed||!parsed.username) return null;
+    return parsed;
+  }catch(e){ return null; }
+}
+function openApp(user, opts){
+  opts=opts||{};
+  currentUser=user;
+  document.getElementById('loginScreen').style.display='none';
+  document.body.classList.toggle('role-user', currentUser.role!=='admin');
+  applyPermissions();
+  document.getElementById('curUserName').textContent=currentUser.username;
+  document.getElementById('curUserRole').textContent=currentUser.role;
+  document.getElementById('appShell').style.display='block';
+  render();
+  loadSettings();
+  saveSession();
+  if(!opts.silent) toast('Welcome, '+currentUser.username,'success');
+}
+async function createFirstAdmin(){
+  const u=(document.getElementById('fr_user').value||'').trim();
+  const p=document.getElementById('fr_pass').value||'';
+  const p2=document.getElementById('fr_pass2').value||'';
+  const errEl=document.getElementById('firstRunErr');
+  if(!u){errEl.style.display='block';errEl.textContent='Please enter a username.';return;}
+  if(p.length<4){errEl.style.display='block';errEl.textContent='Password must be at least 4 characters.';return;}
+  if(p!==p2){errEl.style.display='block';errEl.textContent='Passwords do not match.';return;}
+  settings.users=[{username:u, password:p, role:'admin'}];
+  await save();
+  document.getElementById('firstRunScreen').style.display='none';
+  openApp({username:u, role:'admin'});
+}
+function doLogin(){
+  const u=(document.getElementById('loginUser').value||'').trim();
+  const p=(document.getElementById('loginPass').value||'');
+  const errEl=document.getElementById('loginErr');
+  const found=(settings.users||[]).find(x=>x.username===u && x.password===p);
+  if(!found){errEl.style.display='block';errEl.textContent='Incorrect username or password.';return;}
+  openApp({username:found.username, role:found.role});
+}
+function doLogout(){
+  if(!confirm('Log out?'))return;
+  currentUser=null;
+  clearSession();
+  document.getElementById('appShell').style.display='none';
+  document.body.classList.remove('role-user');
+  switchTab('inventory');
+  showLoginScreen();
+}
+function requireAdmin(){
+  if(!currentUser || currentUser.role!=='admin'){ toast('Only Admin can do this action.','error'); return false; }
+  return true;
+}
+function applyPermissions(){
+  const p=settings.permissions||{};
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  document.body.classList.toggle('no-damage-perm', !isAdmin && p.reportDamage===false);
+  document.body.classList.toggle('no-price-perm',  !isAdmin && p.viewPrice===false);
+  document.body.classList.toggle('no-export-perm', !isAdmin && p.exportData===false);
+  document.body.classList.toggle('no-notes-perm',  !isAdmin && p.viewNotes===false);
+}
+function applyBranding(){
+  document.documentElement.style.setProperty('--accent', settings.accent||'#d4501a');
+  document.documentElement.style.setProperty('--bg', settings.bg||'#f5f4f0');
+  document.documentElement.style.setProperty('--surface', settings.surface||'#ffffff');
+  const nameEls=[document.getElementById('topSysName')];
+  nameEls.forEach(el=>{ if(el) el.textContent=settings.sysName||'Electro Stock'; });
+  document.title = (settings.sysName||'Electro Stock')+' — Inventory & Sales';
+  const iconTargets=['topLogoIcon'];
+  iconTargets.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML = settings.logoData ? `<img src="${settings.logoData}">` : '<i class="ti ti-bolt"></i>';
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// USER MANAGEMENT (admin only)
+// ══════════════════════════════════════════════════════════════════
+function renderCategories(){
+  const box=document.getElementById('catListBox');
+  if(!box) return;
+  const cats=settings.categories||[];
+  box.innerHTML=cats.map(c=>`<span class="badge badge-cat" style="gap:8px">${escHtml(c)} <i class="ti ti-x" style="cursor:pointer" onclick="removeCategory('${escHtml(c).replace(/'/g,"\\\\'")}')"></i></span>`).join('') || '<span style="color:var(--text3);font-size:12px">No categories yet</span>';
+}
+async function addCategory(){
+  if(!requireAdmin())return;
+  const input=document.getElementById('newCatInput');
+  const name=(input.value||'').trim();
+  if(!name){toast('Enter a category name','error');return;}
+  settings.categories=settings.categories||[];
+  if(settings.categories.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Category already exists','error');return;}
+  settings.categories.push(name);
+  input.value='';
+  renderCategories();
+  toast('Category added','success');
+  await save();
+}
+async function removeCategory(name){
+  if(!requireAdmin())return;
+  if(!confirm('Remove category "'+name+'"?\nExisting items keep this category, but it won\'t appear as a suggestion for new items.'))return;
+  settings.categories=(settings.categories||[]).filter(c=>c!==name);
+  renderCategories();
+  toast('Category removed');
+  await save();
+}
+function renderUsers(){
+  const tb=document.getElementById('usersTableBody');
+  if(!tb) return;
+  tb.innerHTML=(settings.users||[]).map(u=>`
+    <tr>
+      <td>${escHtml(u.username)}</td>
+      <td><span class="badge ${u.role==='admin'?'badge-cat':'badge-ok'}">${u.role}</span></td>
+      <td><button class="btn btn-sm btn-danger" onclick="deleteUser('${escHtml(u.username)}')" ${u.username===currentUser.username?'disabled title="Cannot delete yourself"':''}><i class="ti ti-trash"></i></button></td>
+    </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--text3)">No users</td></tr>';
+}
+async function addUser(){
+  if(!requireAdmin())return;
+  const username=(document.getElementById('u_username').value||'').trim();
+  const password=(document.getElementById('u_password').value||'').trim();
+  const role=document.getElementById('u_role').value;
+  if(!username||!password){toast('Enter username and password','error');return;}
+  if((settings.users||[]).some(x=>x.username===username)){toast('Username already exists','error');return;}
+  settings.users=settings.users||[];
+  settings.users.push({username,password,role});
+  document.getElementById('u_username').value='';
+  document.getElementById('u_password').value='';
+  renderUsers();
+  toast('User added','success');
+  await save();
+}
+async function deleteUser(username){
+  if(!requireAdmin())return;
+  if(username===currentUser.username){toast('You cannot delete your own account','error');return;}
+  if(!confirm('Delete user "'+username+'"?'))return;
+  settings.users=(settings.users||[]).filter(x=>x.username!==username);
+  renderUsers();
+  toast('User deleted');
+  await save();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BRANDING SETTINGS (admin only)
+// ══════════════════════════════════════════════════════════════════
+function handleLogoUpload(e){
+  const f=e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    document.getElementById('logoPreview').innerHTML=`<img src="${ev.target.result}">`;
+    document.getElementById('logoPreview').dataset.logo=ev.target.result;
+  };
+  reader.readAsDataURL(f);
+}
+function clearLogo(){
+  document.getElementById('logoPreview').innerHTML='<i class="ti ti-bolt" style="font-size:22px;color:var(--text3)"></i>';
+  document.getElementById('logoPreview').dataset.logo='';
+}
+async function saveBranding(){
+  if(!requireAdmin())return;
+  settings.sysName=(document.getElementById('s_sysName').value||'Electro Stock').trim();
+  settings.accent=document.getElementById('s_accent').value||'#d4501a';
+  settings.bg=document.getElementById('s_bg').value||'#f5f4f0';
+  settings.surface=document.getElementById('s_surface').value||'#ffffff';
+  const logoData=document.getElementById('logoPreview').dataset.logo;
+  if(logoData!==undefined) settings.logoData=logoData;
+  applyBranding();
+  toast('Branding saved','success');
+  await save();
+}
+async function updateLicense(){
+  if(!requireAdmin())return;
+  const key=(document.getElementById('s_licKey').value||'').trim();
+  if(!key){toast('Paste a license key first','error');return;}
+  const result=await verifyLicenseKey(key);
+  if(!result.valid){toast('Invalid license: '+result.reason,'error');return;}
+  settings.license={key};
+  licenseInfo=result.payload;
+  document.getElementById('s_licKey').value='';
+  renderLicenseInfo();
+  toast('License updated','success');
+  await save();
+}
+function renderLicenseInfo(){
+  const box=document.getElementById('licenseInfoBox');
+  if(!box) return;
+  if(licenseInfo){
+    box.innerHTML=`<strong>Licensed to:</strong> ${escHtml(licenseInfo.licensee||'—')}<br><strong>Expires:</strong> ${escHtml(licenseInfo.expiry||'—')}<br><strong>Status:</strong> <span style="color:var(--green)">Active ✓</span>`;
+  } else {
+    box.innerHTML=`<span style="color:var(--red)">No active license found.</span>`;
+  }
+}
+function startBgSync(){
+  // Background sync: poll every 15s — reload from backend if reconnected
+  if(bgSyncTimer) clearInterval(bgSyncTimer);
+  bgSyncTimer = setInterval(async()=>{
+    const mode=getSyncMode();
+
+    if(mode==='github'){
+      const cfg=getGithubConfig();
+      const headers={Accept:'application/vnd.github+json'};
+      if(cfg.token) headers['Authorization']='Bearer '+cfg.token;
+      try{
+        const r=await fetch(ghContentsUrl(cfg,true),{method:'HEAD',headers,signal:AbortSignal.timeout(4000)}).catch(()=>fetch(ghContentsUrl(cfg,true),{headers,signal:AbortSignal.timeout(4000)}));
+        if(r.ok || r.status===404){
+          if(!syncConnected){
+            syncConnected=true;
+            const res=await loadRemoteData();
+            if(res.ok&&res.data){
+              items=res.data.items||items; history=res.data.history||history; sales=res.data.sales||sales;
+              if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+              render();renderSalesTable();loadSettings();
+              addSyncLog('Reconnected — reloaded latest data from GitHub');
+              toast('Reconnected. Data refreshed from GitHub.','success');
+            }
+          }
+          setSyncUI(true,'Syncing via GitHub ✓',cfg.owner+'/'+cfg.repo,null,'green');
+        } else { throw new Error('GitHub unreachable'); }
+      }catch(e){
+        if(syncConnected){
+          syncConnected=false;
+          setSyncUI(false,'GitHub unreachable — reconnecting…','','Cannot reach GitHub. Changes will NOT be saved until reconnected.','red');
+          addSyncLog('GitHub went unreachable',false);
+          toast('GitHub unreachable — data not being saved','error');
+        }
+      }
+      return;
+    }
+
+    try{
+      const r=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(2000)});
+      const d=await r.json();
+      if(d.ok){
+        if(!syncConnected){
+          // Just came back online — reload latest data from file
+          syncConnected=true;
+          try{
+            const lr=await fetch(SERVER+'/load',{signal:AbortSignal.timeout(5000)});
+            const ld=await lr.json();
+            if(ld.ok&&ld.data){
+              const loaded=ld.data;
+              items  =loaded.items   ||items;
+              history=loaded.history ||history;
+              sales  =loaded.sales   ||sales;
+              if(loaded.settings) settings=Object.assign(settings,loaded.settings);
+              if(d.mtime!=null) localMtime=d.mtime;
+              render();renderSalesTable();loadSettings();
+              addSyncLog('Reconnected — reloaded latest data');
+              toast('Reconnected. Data refreshed from file.','success');
+            }
+          }catch(e2){addSyncLog('Reconnect load failed: '+e2.message,false);}
+        }
+        setSyncUI(true,'Syncing ✓',d.data_file,null,'green');
+      }
+    }catch(e){
+      if(syncConnected){
+        syncConnected=false;
+        setSyncUI(false,'Server offline — reconnecting…','','Server unreachable. Changes will NOT be saved until reconnected.','red');
+        addSyncLog('Server went offline',false);
+        toast('Server offline — data not being saved','error');
+      }
+    }
+  },15000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+bootSequence();
+</script>
+</div><!-- /appShell -->
+</body>
+</html>
