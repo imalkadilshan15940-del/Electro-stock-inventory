@@ -45,7 +45,7 @@
       "category": "Other",
       "unit": "pcs",
       "total": 100,
-      "used": 2,
+      "used": 3,
       "min": 5,
       "price": 0,
       "notes": ""
@@ -101,6 +101,16 @@
     }
   ],
   "history": [
+    {
+      "id": 15,
+      "itemId": 4,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1013",
+      "ts": 1786123574753,
+      "by": "admin"
+    },
     {
       "id": 14,
       "itemId": 3,
@@ -243,6 +253,33 @@
     }
   ],
   "sales": [
+    {
+      "id": 13,
+      "receiptNo": "INV-1013",
+      "ts": 1786123574753,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": ""
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 4,
+          "name": "Calculator",
+          "sku": "lm1254",
+          "unit": "pcs",
+          "price": 0,
+          "qty": 1,
+          "warranty": 0
+        }
+      ],
+      "subtotal": 0,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 0
+    },
     {
       "id": 12,
       "receiptNo": "INV-1012",
@@ -641,5 +678,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-07T17:25:17.977Z"
+  "syncedAt": "2026-08-07T17:26:14.762Z"
 }
