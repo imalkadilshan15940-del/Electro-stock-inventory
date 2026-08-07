@@ -111,6 +111,126 @@
       "price": 1000,
       "warranty": 2,
       "notes": ""
+    },
+    {
+      "id": 10,
+      "name": "Bulb",
+      "sku": "B001",
+      "category": "LEDs & Bulbs",
+      "unit": "pcs",
+      "total": 50,
+      "used": 30,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 11,
+      "name": "Calculator",
+      "sku": "CAL001",
+      "category": "Calculator",
+      "unit": "pcs",
+      "total": 10,
+      "used": 5,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 12,
+      "name": "Bulb",
+      "sku": "test10",
+      "category": "LEDs & Bulbs",
+      "unit": "pcs",
+      "total": 101,
+      "used": 25,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 13,
+      "name": "Calculator",
+      "sku": "lm1254",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 100,
+      "used": 3,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 14,
+      "name": "pen",
+      "sku": "test10",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 101,
+      "used": 23,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 15,
+      "name": "mouse",
+      "sku": "lm1254",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 100,
+      "used": 2,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 16,
+      "name": "book",
+      "sku": "test10",
+      "category": "Fuses",
+      "unit": "pcs",
+      "total": 101,
+      "used": 24,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 17,
+      "name": "phone",
+      "sku": "lm1254",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 100,
+      "used": 1,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 18,
+      "name": "tester",
+      "sku": "t420",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 10,
+      "used": 0,
+      "min": 5,
+      "price": 0,
+      "notes": ""
+    },
+    {
+      "id": 19,
+      "name": "Files",
+      "sku": "F20",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 10,
+      "used": 0,
+      "min": 5,
+      "price": 0,
+      "notes": ""
     }
   ],
   "history": [
@@ -793,5 +913,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-07T18:00:23.163Z"
+  "syncedAt": "2026-08-07T18:06:38.398Z"
 }
