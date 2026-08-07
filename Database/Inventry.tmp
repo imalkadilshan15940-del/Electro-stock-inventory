@@ -1,0 +1,224 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Circuit Breaker 20A",
+      "sku": "CB-20A-001",
+      "category": "Breakers",
+      "unit": "pcs",
+      "total": 100,
+      "used": 73,
+      "min": 20,
+      "price": 450,
+      "notes": "Havells brand"
+    },
+    {
+      "id": 2,
+      "name": "2.5mm Twin & Earth Cable",
+      "sku": "CAB-2.5-TE",
+      "category": "Cables & Wires",
+      "unit": "m",
+      "total": 500,
+      "used": 310,
+      "min": 100,
+      "price": 85,
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "name": "MCB Switch 32A",
+      "sku": "MCB-32A-SNG",
+      "category": "Switches",
+      "unit": "pcs",
+      "total": 60,
+      "used": 58,
+      "min": 10,
+      "price": 680,
+      "notes": "Single pole"
+    },
+    {
+      "id": 4,
+      "name": "LED Bulb 9W E27",
+      "sku": "LED-9W-E27",
+      "category": "LEDs & Bulbs",
+      "unit": "pcs",
+      "total": 200,
+      "used": 146,
+      "min": 30,
+      "price": 120,
+      "notes": "Cool white"
+    },
+    {
+      "id": 5,
+      "name": "3-Pin Socket 13A",
+      "sku": "SOC-13A-3P",
+      "category": "Sockets & Outlets",
+      "unit": "pcs",
+      "total": 80,
+      "used": 80,
+      "min": 15,
+      "price": 350,
+      "notes": ""
+    },
+    {
+      "id": 6,
+      "name": "20mm PVC Conduit 3m",
+      "sku": "CON-20-3M",
+      "category": "Conduits & Fittings",
+      "unit": "pcs",
+      "total": 150,
+      "used": 89,
+      "min": 25,
+      "price": 95,
+      "notes": ""
+    },
+    {
+      "id": 7,
+      "name": "10A Ceramic Fuse",
+      "sku": "FUSE-10A-C",
+      "category": "Fuses",
+      "unit": "pcs",
+      "total": 300,
+      "used": 271,
+      "min": 50,
+      "price": 25,
+      "notes": ""
+    },
+    {
+      "id": 8,
+      "name": "25mm² Copper Lugs",
+      "sku": "LUG-25-CU",
+      "category": "Connectors & Lugs",
+      "unit": "pcs",
+      "total": 500,
+      "used": 323,
+      "min": 100,
+      "price": 18,
+      "notes": ""
+    },
+    {
+      "id": 9,
+      "name": "Earth Leakage CB 30mA",
+      "sku": "ELCB-30MA",
+      "category": "Breakers",
+      "unit": "pcs",
+      "total": 40,
+      "used": 12,
+      "min": 8,
+      "price": 1850,
+      "notes": ""
+    },
+    {
+      "id": 10,
+      "name": "4mm Single Core Cable",
+      "sku": "CAB-4MM-SC",
+      "category": "Cables & Wires",
+      "unit": "m",
+      "total": 300,
+      "used": 190,
+      "min": 60,
+      "price": 110,
+      "notes": "Red, Black, Green"
+    }
+  ],
+  "history": [
+    {
+      "id": 10,
+      "itemId": 8,
+      "type": "sale",
+      "qty": 2,
+      "note": "Sold to imalka",
+      "receiptNo": "INV-1003",
+      "ts": 1780715086197
+    },
+    {
+      "id": 9,
+      "itemId": 8,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1002",
+      "ts": 1780714989517
+    },
+    {
+      "id": 8,
+      "itemId": 6,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1002",
+      "ts": 1780714989517
+    },
+    {
+      "id": 7,
+      "itemId": 4,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1002",
+      "ts": 1780714989517
+    },
+    {
+      "id": 6,
+      "itemId": 1,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1001",
+      "ts": 1780714947251
+    },
+    {
+      "id": 1,
+      "itemId": 1,
+      "type": "in",
+      "qty": 50,
+      "note": "Purchase from supplier",
+      "ts": 1780048571231
+    },
+    {
+      "id": 2,
+      "itemId": 1,
+      "type": "out",
+      "qty": 22,
+      "note": "Sold to customer",
+      "ts": 1780394171231
+    },
+    {
+      "id": 3,
+      "itemId": 3,
+      "type": "out",
+      "qty": 10,
+      "note": "Project installation",
+      "ts": 1780566971231
+    },
+    {
+      "id": 4,
+      "itemId": 5,
+      "type": "out",
+      "qty": 5,
+      "note": "Sold to Mr. Perera",
+      "ts": 1780480571231
+    },
+    {
+      "id": 5,
+      "itemId": 7,
+      "type": "out",
+      "qty": 30,
+      "note": "Workshop use",
+      "ts": 1780221371231
+    }
+  ],
+  "sales": [],
+  "settings": {
+    "shopName": "My Electrical Shop",
+    "addr1": "No. 1, Main Street",
+    "addr2": "Colombo",
+    "phone": "011 000 0000",
+    "email": "",
+    "footer": "Thank you for your purchase!",
+    "prefix": "INV-",
+    "startNo": 1001,
+    "currency": "Rs."
+  },
+  "syncedAt": "2026-07-03T09:59:53.780Z"
+}
