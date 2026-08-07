@@ -98,6 +98,19 @@
       "min": 5,
       "price": 0,
       "notes": ""
+    },
+    {
+      "id": 9,
+      "name": "tester",
+      "sku": "t420",
+      "category": "Other",
+      "unit": "pcs",
+      "total": 10,
+      "used": 0,
+      "min": 5,
+      "price": 1000,
+      "warranty": 2,
+      "notes": ""
     }
   ],
   "history": [
@@ -780,5 +793,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-07T17:59:20.160Z"
+  "syncedAt": "2026-08-07T18:00:23.163Z"
 }
