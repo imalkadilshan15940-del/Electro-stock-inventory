@@ -20,7 +20,7 @@
       "category": "Calculator",
       "unit": "pcs",
       "total": 10,
-      "used": 3,
+      "used": 4,
       "min": 5,
       "price": 1000,
       "warranty": 6,
@@ -101,6 +101,16 @@
     }
   ],
   "history": [
+    {
+      "id": 10,
+      "itemId": 2,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1008",
+      "ts": 1786122680965,
+      "by": "admin"
+    },
     {
       "id": 9,
       "itemId": 1,
@@ -193,6 +203,33 @@
     }
   ],
   "sales": [
+    {
+      "id": 8,
+      "receiptNo": "INV-1008",
+      "ts": 1786122680965,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": ""
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 2,
+          "name": "Calculator",
+          "sku": "CAL001",
+          "unit": "pcs",
+          "price": 1000,
+          "qty": 1,
+          "warranty": 6
+        }
+      ],
+      "subtotal": 1000,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 1000
+    },
     {
       "id": 7,
       "receiptNo": "INV-1007",
@@ -456,5 +493,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-07T17:10:50.087Z"
+  "syncedAt": "2026-08-07T17:11:20.977Z"
 }
