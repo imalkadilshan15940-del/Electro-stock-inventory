@@ -81,7 +81,7 @@
       "category": "Fuses",
       "unit": "pcs",
       "total": 101,
-      "used": 22,
+      "used": 24,
       "min": 5,
       "price": 50,
       "notes": "",
@@ -101,6 +101,15 @@
     }
   ],
   "history": [
+    {
+      "id": 19,
+      "itemId": 7,
+      "type": "damage",
+      "qty": 2,
+      "note": "broken",
+      "ts": 1786125560154,
+      "by": "admin"
+    },
     {
       "id": 18,
       "itemId": 1,
@@ -771,5 +780,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-07T17:58:33.848Z"
+  "syncedAt": "2026-08-07T17:59:20.160Z"
 }
