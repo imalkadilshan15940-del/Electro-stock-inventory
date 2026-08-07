@@ -1067,7 +1067,7 @@ function ghContentsUrl(cfg, withRef){
 async function ghLoad(){
   const cfg=getGithubConfig();
   if(!cfg.owner||!cfg.repo||!cfg.path) return {ok:false, error:'GitHub repository is not configured yet.'};
-  const headers={Accept:'application/vnd.github+json', 'Cache-Control':'no-cache', 'Pragma':'no-cache'};
+  const headers={Accept:'application/vnd.github+json'};
   if(cfg.token) headers['Authorization']='Bearer '+cfg.token;
   try{
     const r=await fetch(ghContentsUrl(cfg,true),{headers, cache:'no-store', signal:AbortSignal.timeout(8000)});
@@ -1140,7 +1140,7 @@ async function loadRemoteData(){
 //   base64url(payloadJSON) + "." + base64url(rawSignature, 64 bytes)
 // See SECURITY_NOTES.md for full details.
 // ══════════════════════════════════════════════════════════════════
-const LICENSE_PUBLIC_KEY_B64 = ''; // paste the public key from license_generator.py here
+const LICENSE_PUBLIC_KEY_B64 = 'BPcbk1/BSBeCJG+usvx9wTcNDfWuanhHX1iaQboleVmPXfdZUfNs+M/OwgPrL8bjiZbH9MxmxBd74wgxdGGkDoc='; // paste the public key from license_generator.py here
 
 function b64urlToBytes(b64url){
   let s=b64url.replace(/-/g,'+').replace(/_/g,'/');
