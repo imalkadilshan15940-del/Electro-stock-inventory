@@ -1044,10 +1044,13 @@ function getGithubConfig(){
     token:  localStorage.getItem('es_gh_token')  || ''
   };
 }
+function sanitizeGithubPath(path){
+  return (path||'electro_stock_data.json').trim().replace(/^\/+/,'').replace(/\/+$/,'').replace(/\/{2,}/g,'/');
+}
 function setGithubConfig(cfg){
   localStorage.setItem('es_gh_owner',  cfg.owner  || '');
   localStorage.setItem('es_gh_repo',   cfg.repo   || '');
-  localStorage.setItem('es_gh_path',   cfg.path   || 'electro_stock_data.json');
+  localStorage.setItem('es_gh_path',   sanitizeGithubPath(cfg.path));
   localStorage.setItem('es_gh_branch', cfg.branch || 'main');
   // Token is a per-device secret credential — only overwrite it if a new one was actually typed.
   if(cfg.token) localStorage.setItem('es_gh_token', cfg.token);
@@ -1058,16 +1061,21 @@ let localMtime = null;  // last-known local-file mtime — same purpose, local-s
 function b64EncodeUnicode(str){ return btoa(unescape(encodeURIComponent(str))); }
 function b64DecodeUnicode(str){ return decodeURIComponent(escape(atob(str))); }
 function ghContentsUrl(cfg, withRef){
-  const encodedPath = cfg.path.split('/').map(encodeURIComponent).join('/');
-  return `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${encodedPath}`+(withRef?`?ref=${encodeURIComponent(cfg.branch)}`:'');
+  const encodedPath = sanitizeGithubPath(cfg.path).split('/').map(encodeURIComponent).join('/');
+  let url = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${encodedPath}`;
+  const params=[];
+  if(withRef) params.push(`ref=${encodeURIComponent(cfg.branch)}`);
+  if(withRef) params.push(`_cb=${Date.now()}`); // cache-buster — GET can otherwise return a stale cached copy right after a save
+  if(params.length) url += '?' + params.join('&');
+  return url;
 }
 async function ghLoad(){
   const cfg=getGithubConfig();
   if(!cfg.owner||!cfg.repo||!cfg.path) return {ok:false, error:'GitHub repository is not configured yet.'};
-  const headers={Accept:'application/vnd.github+json'};
+  const headers={Accept:'application/vnd.github+json', 'Cache-Control':'no-cache', 'Pragma':'no-cache'};
   if(cfg.token) headers['Authorization']='Bearer '+cfg.token;
   try{
-    const r=await fetch(ghContentsUrl(cfg,true),{headers, signal:AbortSignal.timeout(8000)});
+    const r=await fetch(ghContentsUrl(cfg,true),{headers, cache:'no-store', signal:AbortSignal.timeout(8000)});
     if(r.status===404){ ghSha=null; return {ok:true, data:null}; }
     if(!r.ok){ let t=''; try{t=(await r.json()).message||'';}catch(e){} return {ok:false, error:`GitHub error ${r.status}${t?': '+t:''}`}; }
     const d=await r.json();
@@ -1137,7 +1145,7 @@ async function loadRemoteData(){
 //   base64url(payloadJSON) + "." + base64url(rawSignature, 64 bytes)
 // See SECURITY_NOTES.md for full details.
 // ══════════════════════════════════════════════════════════════════
-const LICENSE_PUBLIC_KEY_B64 = 'BPcbk1/BSBeCJG+usvx9wTcNDfWuanhHX1iaQboleVmPXfdZUfNs+M/OwgPrL8bjiZbH9MxmxBd74wgxdGGkDoc='; // paste the public key from license_generator.py here
+const LICENSE_PUBLIC_KEY_B64 = ''; // paste the public key from license_generator.py here
 
 function b64urlToBytes(b64url){
   let s=b64url.replace(/-/g,'+').replace(/_/g,'/');
