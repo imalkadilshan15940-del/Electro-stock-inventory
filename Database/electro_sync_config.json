@@ -526,51 +526,6 @@
   ],
   "sales": [
     {
-      "id": 3,
-      "receiptNo": "INV-1003",
-      "ts": 1784908310338,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 1,
-          "name": "Bulb",
-          "sku": "B001",
-          "unit": "pcs",
-          "price": 200,
-          "qty": 1,
-          "warranty": 1
-        },
-        {
-          "id": 4,
-          "name": "Calculator",
-          "sku": "lm1254",
-          "unit": "pcs",
-          "price": 0,
-          "qty": 1,
-          "warranty": 0
-        },
-        {
-          "id": 6,
-          "name": "mouse",
-          "sku": "lm1254",
-          "unit": "pcs",
-          "price": 0,
-          "qty": 1,
-          "warranty": 0
-        }
-      ],
-      "subtotal": 200,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 200
-    },
-    {
       "id": 2,
       "receiptNo": "INV-1002",
       "ts": 1784634227049,
@@ -680,5 +635,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:08:10.099Z"
+  "syncedAt": "2026-08-08T06:08:15.331Z"
 }
