@@ -1211,11 +1211,12 @@ let licenseInfo = null;
 // ══════════════════════════════════════════════════════════════════
 // SAVE — always push to server, no localStorage
 // ══════════════════════════════════════════════════════════════════
-async function save(){
-  if(!syncConnected){
-    toast('Not connected — change not saved!','error');
-    return;
-  }
+// Attempts exactly one save, with NO dialogs and NO side-UI — just reports
+// what happened. Used both by save() (which adds the user-facing conflict
+// dialog on top) and by saveWithRetry() (which resolves conflicts silently
+// by retrying against fresh data instead of ever asking the user).
+async function trySaveOnce(){
+  if(!syncConnected) return {ok:false, error:'Not connected.'};
   const data = { items, history, sales, settings, syncedAt: new Date().toISOString() };
 
   if(getSyncMode()==='github'){
@@ -1224,18 +1225,16 @@ async function save(){
       lastSyncTime=new Date().toLocaleTimeString('en-GB');
       addSyncLog('Saved → GitHub ('+getGithubConfig().path+')');
       updateSyncTime();
-    } else if(res.conflict){
-      addSyncLog('Save blocked — remote data changed', false);
-      const wantRefresh=confirm('⚠ '+res.error+'\n\nOK = load the latest data now (you\'ll need to redo your last change).\nCancel = save anyway (this WILL overwrite their change).');
-      if(wantRefresh){ await manualRefresh(); }
-      else { ghSha=null; const retry=await ghSave(data); if(retry.ok){ addSyncLog('Saved → GitHub (forced overwrite)'); toast('Saved (overwrote remote changes)','success'); } else { toast('Save failed: '+retry.error,'error'); } }
-    } else {
-      addSyncLog('Save failed: '+res.error, false);
-      toast('Save failed: '+res.error,'error');
-      syncConnected=false;
-      setSyncUI(false,'GitHub unreachable','','Could not reach GitHub. Changes will NOT be saved until reconnected.','red');
+      return {ok:true};
     }
-    return;
+    if(res.conflict){
+      addSyncLog('Save blocked — remote data changed', false);
+      return {ok:false, conflict:true, error:res.error};
+    }
+    addSyncLog('Save failed: '+res.error, false);
+    syncConnected=false;
+    setSyncUI(false,'GitHub unreachable','','Could not reach GitHub. Changes will NOT be saved until reconnected.','red');
+    return {ok:false, error:res.error};
   }
 
   // ── LOCAL PYTHON SERVER MODE ──
@@ -1243,16 +1242,13 @@ async function save(){
     const statusR=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)});
     const statusD=await statusR.json();
     if(statusD.ok && localMtime!=null && statusD.mtime!=null && statusD.mtime!==localMtime){
-      const wantRefresh=confirm('⚠ The data file was changed by another device since you last loaded it.\n\nOK = load the latest data now (you\'ll need to redo your last change).\nCancel = save anyway (this WILL overwrite their change).');
-      if(wantRefresh){ await manualRefresh(); return; }
+      return {ok:false, conflict:true, error:'The data file was changed by another device since you last loaded it.'};
     }
   }catch(e){ /* best-effort pre-check only */ }
   try{
     const r = await fetch(SERVER+'/save',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({data}),
-      signal: AbortSignal.timeout(5000)
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({data}), signal: AbortSignal.timeout(5000)
     });
     const d = await r.json();
     if(d.ok){
@@ -1260,16 +1256,73 @@ async function save(){
       addSyncLog('Saved → '+d.saved_to.split('\\').pop().split('/').pop());
       if(d.mtime!=null) localMtime=d.mtime;
       updateSyncTime();
-    } else {
-      addSyncLog('Save failed: '+d.error, false);
-      toast('Save failed: '+d.error,'error');
+      return {ok:true};
     }
+    addSyncLog('Save failed: '+d.error, false);
+    return {ok:false, error:d.error};
   } catch(e){
     addSyncLog('Save error: '+e.message, false);
     syncConnected = false;
     setSyncUI(false,'Server offline','','Server went offline. Reconnecting…','red');
-    toast('Server offline — data NOT saved','error');
+    return {ok:false, error:e.message};
   }
+}
+
+async function save(){
+  const res=await trySaveOnce();
+  if(res.ok) return;
+  if(res.conflict){
+    const wantRefresh=confirm('⚠ '+res.error+'\n\nOK = load the latest data now (you\'ll need to redo your last change).\nCancel = save anyway (this WILL overwrite their change).');
+    if(wantRefresh){ await manualRefresh(); return; }
+    // Force overwrite: adopt the current remote version marker first (both
+    // GitHub's sha and the local file's mtime require this to update an
+    // existing file/conflict-check successfully), then push our local
+    // snapshot on top of it.
+    if(getSyncMode()==='github'){
+      await ghLoad();
+    } else {
+      try{ const sr=await fetch(SERVER+'/status',{signal:AbortSignal.timeout(3000)}); const sd=await sr.json(); if(sd.ok&&sd.mtime!=null) localMtime=sd.mtime; }catch(e){}
+    }
+    const retry=await trySaveOnce();
+    if(retry.ok){ toast('Saved (overwrote remote changes)','success'); }
+    else { toast('Save failed: '+retry.error,'error'); }
+    return;
+  }
+  toast(res.error==='Not connected.' ? 'Not connected — change not saved!' : 'Save failed: '+res.error, 'error');
+}
+
+// Auto-resolves conflicts by silently reloading fresh data and re-applying
+// the SAME intended change on top of it, retrying a few times — instead of
+// interrupting the person with a dialog every time two devices happen to
+// save close together. This is what makes two people working on two
+// laptops "at the same time" actually work smoothly.
+//
+// applyFn(): mutates items/history/sales for this one action, using the
+//   CURRENT (possibly just-refreshed) in-memory state. Must return
+//   {ok:true} or {ok:false, reason} — e.g. reason = "not enough stock".
+// revertFn(): undoes exactly what applyFn() just did, so the next retry
+//   starts clean from a fresh reload rather than double-applying.
+async function saveWithRetry(applyFn, revertFn, maxAttempts=5){
+  for(let attempt=0; attempt<maxAttempts; attempt++){
+    if(attempt>0){
+      const res=await loadRemoteData();
+      if(!res.ok) return {ok:false, error:res.error||'Could not reload the latest data.'};
+      if(res.data){
+        items=res.data.items||items; history=res.data.history||history; sales=res.data.sales||sales;
+        if(res.data.settings) settings=Object.assign(settings,res.data.settings);
+      }
+    }
+    const applied=applyFn();
+    if(!applied.ok) return {ok:false, error:applied.reason};
+
+    const saved=await trySaveOnce();
+    if(saved.ok) return {ok:true};
+
+    revertFn();
+    if(!saved.conflict) return {ok:false, error:saved.error};
+    // else: genuine conflict — loop again with a fresh reload
+  }
+  return {ok:false, error:'Several people are saving at the same time — please try again in a moment.'};
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1508,15 +1561,36 @@ async function saveMove(){
   const qty=parseInt(document.getElementById('m_qty').value)||0;
   const note=document.getElementById('m_note').value.trim();
   if(qty<=0){toast('Enter a valid quantity','error');return;}
-  const idx=items.findIndex(i=>i.id===moveId);
-  const item=items[idx];
-  if(moveType==='out'){const av=getAvailable(item);if(qty>av){toast(`Only ${av} ${item.unit||'pcs'} available`,'error');return;}items[idx].used+=qty;}
-  else{items[idx].total+=qty;}
-  history.unshift({id:nextId(history),itemId:moveId,type:moveType,qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+  const targetId=moveId, type=moveType;
   closeModal('moveModal');
+
+  let addedHistId=null;
+  const result=await saveWithRetry(
+    ()=>{
+      const idx=items.findIndex(i=>i.id===targetId);
+      if(idx===-1) return {ok:false, reason:'This item no longer exists.'};
+      const item=items[idx];
+      if(type==='out'){
+        const av=getAvailable(item);
+        if(qty>av) return {ok:false, reason:`Only ${av} ${item.unit||'pcs'} available now.`};
+        items[idx].used+=qty;
+      } else {
+        items[idx].total+=qty;
+      }
+      addedHistId=nextId(history);
+      history.unshift({id:addedHistId,itemId:targetId,type,qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+      return {ok:true};
+    },
+    ()=>{
+      const idx=items.findIndex(i=>i.id===targetId);
+      if(idx>-1){ if(type==='out') items[idx].used-=qty; else items[idx].total-=qty; }
+      if(addedHistId!=null) history=history.filter(h=>h.id!==addedHistId);
+      addedHistId=null;
+    }
+  );
   render();
-  toast(moveType==='in'?`+${qty} added to stock`:`${qty} removed from stock`,'success');
-  await save();
+  if(result.ok) toast(type==='in'?`+${qty} added to stock`:`${qty} removed from stock`,'success');
+  else toast('Could not save: '+result.error,'error');
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1550,16 +1624,32 @@ async function saveDamage(){
   const note=document.getElementById('d_note').value.trim();
   if(qty<=0){toast('Enter a valid quantity','error');return;}
   if(!note){toast('Please enter a reason for the damage','error');return;}
-  const idx=items.findIndex(i=>i.id===damageId);
-  const item=items[idx];
-  const av=getAvailable(item);
-  if(qty>av){toast(`Only ${av} ${item.unit||'pcs'} available`,'error');return;}
-  items[idx].used+=qty;
-  history.unshift({id:nextId(history),itemId:damageId,type:'damage',qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+  const targetId=damageId;
   closeModal('damageModal');
+
+  let addedHistId=null;
+  const result=await saveWithRetry(
+    ()=>{
+      const idx=items.findIndex(i=>i.id===targetId);
+      if(idx===-1) return {ok:false, reason:'This item no longer exists.'};
+      const item=items[idx];
+      const av=getAvailable(item);
+      if(qty>av) return {ok:false, reason:`Only ${av} ${item.unit||'pcs'} available now.`};
+      items[idx].used+=qty;
+      addedHistId=nextId(history);
+      history.unshift({id:addedHistId,itemId:targetId,type:'damage',qty,note,ts:Date.now(),by:currentUser?currentUser.username:''});
+      return {ok:true};
+    },
+    ()=>{
+      const idx=items.findIndex(i=>i.id===targetId);
+      if(idx>-1) items[idx].used-=qty;
+      if(addedHistId!=null) history=history.filter(h=>h.id!==addedHistId);
+      addedHistId=null;
+    }
+  );
   render();
-  toast(`${qty} marked as damaged`,'success');
-  await save();
+  if(result.ok) toast(`${qty} marked as damaged`,'success');
+  else toast('Could not save: '+result.error,'error');
 }
 
 function showHistory(id){
@@ -1689,37 +1779,62 @@ function recalcCart(){
 }
 async function issueReceipt(){
   if(cart.length===0){toast('Cart is empty','error');return;}
-  for(const c of cart){
-    const item=items.find(i=>i.id===c.id);
-    if(getAvailable(item)<c.qty){toast(`Not enough stock for: ${item.name} (available: ${getAvailable(item)})`,'error');return;}
-  }
+  const cartSnapshot=cart.map(c=>({...c}));
   const custName=document.getElementById('custName').value.trim()||'Walk-in Customer';
   const custPhone=document.getElementById('custPhone').value.trim();
   const payMethod=document.getElementById('payMethod').value;
   const saleNote=document.getElementById('saleNote').value.trim();
   const dv=parseFloat(document.getElementById('discVal').value)||0;
   const dt=document.getElementById('discType').value;
-  const subtotal=cart.reduce((s,c)=>s+(c.price*c.qty),0);
-  const discAmt=dt==='pct'?Math.min(subtotal,subtotal*dv/100):Math.min(subtotal,dv);
-  const total=subtotal-discAmt;
-  const receiptNo=nextReceiptNo();
-  const ts=Date.now();
-  cart.forEach(c=>{
-    const idx=items.findIndex(i=>i.id===c.id);
-    items[idx].used+=c.qty;
-    history.unshift({id:nextId(history),itemId:c.id,type:'sale',qty:c.qty,note:`Sold to ${custName}`,receiptNo,ts,by:currentUser?currentUser.username:''});
-  });
-  const saleRecord={id:nextId(sales),receiptNo,ts,customer:{name:custName,phone:custPhone},payMethod,note:saleNote,items:cart.map(c=>({...c})),subtotal,discAmt,discType:dt,discVal:dv,total};
-  sales.unshift(saleRecord);
-  buildAndShowReceipt(saleRecord);
-  cart=[];
-  document.getElementById('custName').value='';
-  document.getElementById('custPhone').value='';
-  document.getElementById('saleNote').value='';
-  document.getElementById('discVal').value='';
-  renderCart();
-  render();
-  await save();
+
+  let builtSale=null;
+
+  const result=await saveWithRetry(
+    ()=>{
+      for(const c of cartSnapshot){
+        const item=items.find(i=>i.id===c.id);
+        if(!item) return {ok:false, reason:`${c.name} no longer exists.`};
+        if(getAvailable(item)<c.qty) return {ok:false, reason:`Not enough stock for ${item.name} — only ${getAvailable(item)} left (it changed since you added it to cart).`};
+      }
+      const subtotal=cartSnapshot.reduce((s,c)=>s+(c.price*c.qty),0);
+      const discAmt=dt==='pct'?Math.min(subtotal,subtotal*dv/100):Math.min(subtotal,dv);
+      const total=subtotal-discAmt;
+      const receiptNo=nextReceiptNo();
+      const ts=Date.now();
+      cartSnapshot.forEach(c=>{
+        const idx=items.findIndex(i=>i.id===c.id);
+        items[idx].used+=c.qty;
+        history.unshift({id:nextId(history),itemId:c.id,type:'sale',qty:c.qty,note:`Sold to ${custName}`,receiptNo,ts,by:currentUser?currentUser.username:''});
+      });
+      builtSale={id:nextId(sales),receiptNo,ts,customer:{name:custName,phone:custPhone},payMethod,note:saleNote,items:cartSnapshot.map(c=>({...c})),subtotal,discAmt,discType:dt,discVal:dv,total};
+      sales.unshift(builtSale);
+      return {ok:true};
+    },
+    ()=>{
+      if(builtSale){
+        sales=sales.filter(s=>s!==builtSale);
+        history=history.filter(h=>h.receiptNo!==builtSale.receiptNo);
+        cartSnapshot.forEach(c=>{
+          const idx=items.findIndex(i=>i.id===c.id);
+          if(idx>-1) items[idx].used-=c.qty;
+        });
+      }
+      builtSale=null;
+    }
+  );
+
+  if(result.ok && builtSale){
+    buildAndShowReceipt(builtSale);
+    cart=[];
+    document.getElementById('custName').value='';
+    document.getElementById('custPhone').value='';
+    document.getElementById('saleNote').value='';
+    document.getElementById('discVal').value='';
+    renderCart(); renderPicker(); render();
+  } else {
+    toast('Could not complete sale: '+(result.error||'unknown error'),'error');
+    renderCart(); renderPicker(); render();
+  }
 }
 function buildAndShowReceipt(sale){
   document.getElementById('receiptContent').innerHTML=buildReceiptHTML(sale);
