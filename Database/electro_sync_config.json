@@ -526,33 +526,6 @@
   ],
   "sales": [
     {
-      "id": 21,
-      "receiptNo": "INV-1021",
-      "ts": 1786169093055,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 4,
-          "name": "Calculator",
-          "sku": "lm1254",
-          "unit": "pcs",
-          "price": 0,
-          "qty": 1,
-          "warranty": 0
-        }
-      ],
-      "subtotal": 0,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 0
-    },
-    {
       "id": 20,
       "receiptNo": "INV-1020",
       "ts": 1786169028241,
@@ -1175,5 +1148,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:06:35.258Z"
+  "syncedAt": "2026-08-08T06:06:37.602Z"
 }
