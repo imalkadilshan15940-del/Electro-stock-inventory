@@ -526,33 +526,6 @@
   ],
   "sales": [
     {
-      "id": 5,
-      "receiptNo": "INV-1005",
-      "ts": 1786122514073,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 1,
-          "name": "Bulb",
-          "sku": "B001",
-          "unit": "pcs",
-          "price": 200,
-          "qty": 1,
-          "warranty": 1
-        }
-      ],
-      "subtotal": 200,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 200
-    },
-    {
       "id": 4,
       "receiptNo": "INV-1004",
       "ts": 1785142762429,
@@ -734,5 +707,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:07:52.637Z"
+  "syncedAt": "2026-08-08T06:07:59.923Z"
 }
