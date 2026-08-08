@@ -526,33 +526,6 @@
   ],
   "sales": [
     {
-      "id": 8,
-      "receiptNo": "INV-1008",
-      "ts": 1786122680965,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 2,
-          "name": "Calculator",
-          "sku": "CAL001",
-          "unit": "pcs",
-          "price": 1000,
-          "qty": 1,
-          "warranty": 6
-        }
-      ],
-      "subtotal": 1000,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 1000
-    },
-    {
       "id": 7,
       "receiptNo": "INV-1007",
       "ts": 1786122650076,
@@ -815,5 +788,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:07:41.983Z"
+  "syncedAt": "2026-08-08T06:07:44.989Z"
 }
