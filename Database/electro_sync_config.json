@@ -526,60 +526,6 @@
   ],
   "sales": [
     {
-      "id": 24,
-      "receiptNo": "INV-1024",
-      "ts": 1786169160174,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 3,
-          "name": "Bulb",
-          "sku": "test10",
-          "unit": "pcs",
-          "price": 0,
-          "qty": 1,
-          "warranty": 0
-        }
-      ],
-      "subtotal": 0,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 0
-    },
-    {
-      "id": 23,
-      "receiptNo": "INV-1023",
-      "ts": 1786169148862,
-      "customer": {
-        "name": "Walk-in Customer",
-        "phone": ""
-      },
-      "payMethod": "Cash",
-      "note": "",
-      "items": [
-        {
-          "id": 3,
-          "name": "Bulb",
-          "sku": "test10",
-          "unit": "pcs",
-          "price": 0,
-          "qty": 1,
-          "warranty": 0
-        }
-      ],
-      "subtotal": 0,
-      "discAmt": 0,
-      "discType": "pct",
-      "discVal": 0,
-      "total": 0
-    },
-    {
       "id": 22,
       "receiptNo": "INV-1022",
       "ts": 1786169145726,
@@ -1256,5 +1202,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:06:28.519Z"
+  "syncedAt": "2026-08-08T06:06:31.997Z"
 }
