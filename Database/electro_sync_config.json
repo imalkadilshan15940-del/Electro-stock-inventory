@@ -33,7 +33,7 @@
       "category": "LEDs & Bulbs",
       "unit": "pcs",
       "total": 101,
-      "used": 28,
+      "used": 29,
       "min": 5,
       "price": 0,
       "notes": ""
@@ -234,6 +234,16 @@
     }
   ],
   "history": [
+    {
+      "id": 28,
+      "itemId": 3,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1024",
+      "ts": 1786169160174,
+      "by": "admin"
+    },
     {
       "id": 27,
       "itemId": 3,
@@ -505,6 +515,33 @@
     }
   ],
   "sales": [
+    {
+      "id": 24,
+      "receiptNo": "INV-1024",
+      "ts": 1786169160174,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": ""
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 3,
+          "name": "Bulb",
+          "sku": "test10",
+          "unit": "pcs",
+          "price": 0,
+          "qty": 1,
+          "warranty": 0
+        }
+      ],
+      "subtotal": 0,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 0
+    },
     {
       "id": 23,
       "receiptNo": "INV-1023",
@@ -1209,5 +1246,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:05:48.862Z"
+  "syncedAt": "2026-08-08T06:06:00.175Z"
 }
