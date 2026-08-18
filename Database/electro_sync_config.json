@@ -916,7 +916,7 @@
       "Calculator"
     ],
     "license": {
-      "key": "eyJsaWNlbnNlZSI6IlJhbmRpa2EiLCJleHBpcnkiOiIyMDI2LTA4LTA5Iiwia2V5IjoiaW1hbGthIiwiaXNzdWVkIjoiMjAyNi0wOC0wOCJ9.1iRPe5QuW0IbHNPn753J_dHQ-a719ba7j_aDMnlBfMd1BZjNCzjM0DsQFoX1VfJBiw3fWfiCQ5usQXaE2K9CWw"
+      "key": "eyJsaWNlbnNlZSI6IkRpbnUiLCJleHBpcnkiOiIyMDI2LTA4LTIwIiwia2V5IjoiaW1hIiwiaXNzdWVkIjoiMjAyNi0wOC0xOCJ9.PwCQTwe0X1AZc7YLBHo89yILy-VWgu-mNIKX6pytak0aZAyH2HuXTMn3gJvqJ8Nl0vhLZlXnedumB5dbyRrYxA"
     },
     "permissions": {
       "reportDamage": true,
@@ -937,5 +937,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-08T06:13:13.699Z"
+  "syncedAt": "2026-08-18T05:28:38.316Z"
 }
