@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Electro Stock — Inventory & Sales</title>
+<title>Dinu Stock — Inventory & Sale</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -319,8 +319,10 @@ body.no-notes-perm .perm-notes{display:none !important}
 .users-table td{padding:8px 10px;border-bottom:1px solid var(--border)}
 .logo-upload-preview{width:56px;height:56px;border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface2)}
 .logo-upload-preview img{width:100%;height:100%;object-fit:contain}
-.report-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px}
-.report-table th{background:var(--surface2);text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--text3);border:1px solid var(--border)}
+.report-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:18px;table-layout:fixed}
+.report-table th{background:var(--surface2);text-align:left;padding:7px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.3px;color:var(--text3);border:1px solid var(--border);position:relative;overflow:hidden}
+.report-table th .resize-handle{position:absolute;top:0;right:0;width:8px;height:100%;cursor:col-resize;user-select:none;}
+.report-table th:last-child .resize-handle{display:none}
 .report-table td{padding:6px 10px;border:1px solid var(--border)}
 .report-table caption{text-align:left;font-weight:700;font-size:13px;margin:14px 0 6px;caption-side:top}
 </style>
@@ -328,13 +330,13 @@ body.no-notes-perm .perm-notes{display:none !important}
 <body>
 
 <!-- LOADING SCREEN -->
-<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#f5f4f0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto;padding:32px 16px;box-sizing:border-box;">
+<div id="loadingScreen" style="position:fixed;inset:0;z-index:9999;background:#f5f4f0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif;overflow-y:auto;">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:36px">
     <div style="width:48px;height:48px;background:#d4501a;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(212,80,26,.4)">
       <i class="ti ti-bolt" style="color:#fff;font-size:26px"></i>
     </div>
     <div>
-      <div style="font-size:22px;font-weight:700;letter-spacing:-.5px;color:#1a1916">Electro Stock</div>
+      <div style="font-size:22px;font-weight:700;letter-spacing:-.5px;color:#1a1916">Dinu Stock</div>
       <div style="font-size:12px;color:#9a9890;margin-top:1px">Inventory &amp; Sales System</div>
     </div>
   </div>
@@ -368,7 +370,7 @@ body.no-notes-perm .perm-notes{display:none !important}
         <div id="bootGithubForm" style="display:none;flex-direction:column;gap:8px">
           <input type="text" id="bg_owner" placeholder="GitHub owner / organisation" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
           <input type="text" id="bg_repo" placeholder="Repository name" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
-          <input type="text" id="bg_path" placeholder="File path in repo, e.g. data/electro_stock_data.json" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
+          <input type="text" id="bg_path" placeholder="File path in repo, e.g. data/Dinu_stock_data.json" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
           <input type="text" id="bg_branch" placeholder="Branch (e.g. main)" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
           <input type="password" id="bg_token" placeholder="Personal access token (repo write access)" style="padding:8px;border:1px solid #e2e0d8;border-radius:6px;font-size:12px">
           <div style="font-size:10.5px;color:#9a9890;line-height:1.6">The token is stored only in this browser (never synced or shared). Ask your admin for the repo details and generate your own token with "repo contents" write access.</div>
@@ -404,7 +406,7 @@ body.no-notes-perm .perm-notes{display:none !important}
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:22px" id="loginBrandRow">
       <div class="logo-icon" id="loginLogoIcon" style="width:38px;height:38px"><i class="ti ti-bolt"></i></div>
       <div>
-        <div style="font-weight:700;font-size:16px" id="loginSysName">Electro Stock</div>
+        <div style="font-weight:700;font-size:16px" id="loginSysName">Dinu Stock</div>
         <div style="font-size:11px;color:var(--text3)">Sign in to continue</div>
       </div>
     </div>
@@ -440,7 +442,7 @@ body.no-notes-perm .perm-notes{display:none !important}
 <div class="topbar">
   <div class="logo">
     <div class="logo-icon" id="topLogoIcon"><i class="ti ti-bolt"></i></div>
-    <span id="topSysName">Electro Stock</span>
+    <span id="topSysName">Dinu Stock</span>
   </div>
   <div id="syncStatus" style="display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--surface2);color:var(--text3)" title="Backend sync status">
       <span id="syncDot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);display:inline-block"></span>
@@ -668,7 +670,7 @@ body.no-notes-perm .perm-notes{display:none !important}
       <div class="settings-card">
         <h4><i class="ti ti-building-store"></i> Shop information</h4>
         <div style="display:flex;flex-direction:column;gap:12px">
-          <div class="field"><label>Shop name</label><input type="text" id="s_shopName" placeholder="My Electrical Shop"></div>
+          <div class="field"><label>Shop name</label><input type="text" id="s_shopName" placeholder="My shop"></div>
           <div class="field"><label>Address line 1</label><input type="text" id="s_addr1" placeholder="No. 12, Main Street"></div>
           <div class="field"><label>Address line 2 / City</label><input type="text" id="s_addr2" placeholder="Colombo 03"></div>
           <div class="field"><label>Phone</label><input type="text" id="s_phone" placeholder="011 XXX XXXX"></div>
@@ -738,8 +740,8 @@ body.no-notes-perm .perm-notes{display:none !important}
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
             <div class="field"><label>Repository owner / org</label><input type="text" id="s_gh_owner" placeholder="e.g. imalkap"></div>
-            <div class="field"><label>Repository name</label><input type="text" id="s_gh_repo" placeholder="e.g. electro-stock-data"></div>
-            <div class="field"><label>File path in repo</label><input type="text" id="s_gh_path" placeholder="data/electro_stock_data.json" style="font-family:var(--mono);font-size:12px"></div>
+            <div class="field"><label>Repository name</label><input type="text" id="s_gh_repo" placeholder="e.g. Dinu-stock-data"></div>
+            <div class="field"><label>File path in repo</label><input type="text" id="s_gh_path" placeholder="data/Dinu_stock_data.json" style="font-family:var(--mono);font-size:12px"></div>
             <div class="field"><label>Branch</label><input type="text" id="s_gh_branch" placeholder="main"></div>
           </div>
           <div class="field" style="margin-bottom:10px"><label>Personal access token (this device only)</label><input type="password" id="s_gh_token" placeholder="Leave blank to keep the token already saved on this device" style="font-family:var(--mono);font-size:12px"></div>
@@ -762,7 +764,7 @@ body.no-notes-perm .perm-notes{display:none !important}
         <details style="margin-top:16px">
           <summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);list-style:none;display:flex;align-items:center;gap:6px"><i class="ti ti-info-circle"></i> Setup instructions (click to expand)</summary>
           <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text2);line-height:1.8;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)">
-            <div><strong>Local Python Server</strong> &mdash; Step 1: install Python from <strong>python.org</strong>. Step 2: keep <strong>electro_stock_server.py</strong>, <strong>start_server.bat</strong> and <strong>Install_AutoStart.bat</strong> together in one folder. Step 3: enter your save path above and click Connect. Best for a single PC, or several PCs on the same office network/shared drive.</div>
+            <div><strong>Local Python Server</strong> &mdash; Step 1: install Python from <strong>python.org</strong>. Step 2: keep <strong>Dinu_stock_server.py</strong>, <strong>start_server.bat</strong> and <strong>Install_AutoStart.bat</strong> together in one folder. Step 3: enter your save path above and click Connect. Best for a single PC, or several PCs on the same office network/shared drive.</div>
             <div><strong>Server keeps stopping / dropping?</strong> &mdash; Run <strong>Install_AutoStart.bat</strong> once (double-click it, no admin rights needed). It sets the server to start automatically at every Windows login, run completely hidden, and restart itself within seconds if it ever crashes — so there's no visible window for anyone to accidentally close, and no button to remember to press. Run <strong>Uninstall_AutoStart.bat</strong> to undo it.</div>
             <div><strong>GitHub Repository</strong> &mdash; No Python or server needed. Create a (private, recommended) GitHub repo, generate a personal access token per device, and fill in the fields above on each laptop that should use the system. Best when laptops are in different locations or you want a proper internet-based multi-user setup.</div>
             <div><strong>Onboarding a new device fast</strong> &mdash; Use "Download connection profile" above, send the file to the new user, and have them click "Load connection profile" on their very first loading screen instead of typing in the repo/path/branch by hand.</div>
@@ -788,7 +790,7 @@ body.no-notes-perm .perm-notes{display:none !important}
       <div class="settings-card">
         <h4><i class="ti ti-palette"></i> Branding</h4>
         <div style="display:flex;flex-direction:column;gap:12px">
-          <div class="field"><label>System name</label><input type="text" id="s_sysName" placeholder="Electro Stock"></div>
+          <div class="field"><label>System name</label><input type="text" id="s_sysName" placeholder="Dinu Stock"></div>
           <div class="field">
             <label>Logo</label>
             <div style="display:flex;align-items:center;gap:12px">
@@ -858,7 +860,7 @@ body.no-notes-perm .perm-notes{display:none !important}
 ══════════════════════════════════════ -->
 
 <!-- Add/Edit Item -->
-<div class="overlay" id="itemModal" style="display:none" onclick="closeIfOverlay(event,'itemModal')">
+<div class="overlay" id="itemModal" style="display:none">
   <div class="modal">
     <div class="modal-head"><h3 id="itemModalTitle">Add item</h3><button class="btn btn-sm" onclick="closeModal('itemModal')"><i class="ti ti-x"></i></button></div>
     <div class="modal-body">
@@ -991,7 +993,7 @@ body.no-notes-perm .perm-notes{display:none !important}
 <script>
 'use strict';
 // ══════════════════════════════════════════════════════════════════
-// ELECTRO STOCK — JavaScript
+// Dinu STOCK — JavaScript
 // Server file is the ONE source of truth. localStorage NOT used.
 // ══════════════════════════════════════════════════════════════════
 
@@ -1002,10 +1004,10 @@ let items   = [];
 let history = [];
 let sales   = [];
 let settings = {
-  shopName:'My Electrical Shop', addr1:'No. 1, Main Street', addr2:'Colombo',
+  shopName:'My shop', addr1:'No. 1, Main Street', addr2:'Colombo',
   phone:'011 000 0000', email:'', footer:'Thank you for your purchase!',
   prefix:'INV-', startNo:1001, currency:'Rs.', reportEmail:'',
-  sysName:'Electro Stock', logoData:'', accent:'#d4501a', bg:'#f5f4f0', surface:'#ffffff',
+  sysName:'Dinu Stock', logoData:'', accent:'#d4501a', bg:'#f5f4f0', surface:'#ffffff',
   categories:['Breakers','Cables & Wires','Switches','Sockets & Outlets','Conduits & Fittings','Transformers','LEDs & Bulbs','Capacitors','Relays','Fuses','Connectors & Lugs','Meters & Testers','Distribution Boards','Other'],
   license:null,
   permissions:{reportDamage:true, viewPrice:true, exportData:true, viewNotes:true},
@@ -1034,13 +1036,13 @@ function getGithubConfig(){
   return {
     owner:  localStorage.getItem('es_gh_owner')  || '',
     repo:   localStorage.getItem('es_gh_repo')   || '',
-    path:   localStorage.getItem('es_gh_path')   || 'electro_stock_data.json',
+    path:   localStorage.getItem('es_gh_path')   || 'Dinu_stock_data.json',
     branch: localStorage.getItem('es_gh_branch') || 'main',
     token:  localStorage.getItem('es_gh_token')  || ''
   };
 }
 function sanitizeGithubPath(path){
-  return (path||'electro_stock_data.json').trim().replace(/^\/+/,'').replace(/\/+$/,'').replace(/\/{2,}/g,'/');
+  return (path||'Dinu_stock_data.json').trim().replace(/^\/+/,'').replace(/\/+$/,'').replace(/\/{2,}/g,'/');
 }
 function setGithubConfig(cfg){
   localStorage.setItem('es_gh_owner',  cfg.owner  || '');
@@ -1085,7 +1087,7 @@ async function ghSave(dataObj){
   if(!cfg.token) return {ok:false, error:'A GitHub personal access token is required to save (enter it in Settings).'};
   const headers={Accept:'application/vnd.github+json','Authorization':'Bearer '+cfg.token,'Content-Type':'application/json'};
   const body={
-    message: 'Electro Stock data update — '+new Date().toISOString(),
+    message: 'Dinu Stock data update — '+new Date().toISOString(),
     content: b64EncodeUnicode(JSON.stringify(dataObj, null, 2)),
     branch: cfg.branch
   };
@@ -1140,7 +1142,7 @@ async function loadRemoteData(){
 //   base64url(payloadJSON) + "." + base64url(rawSignature, 64 bytes)
 // See SECURITY_NOTES.md for full details.
 // ══════════════════════════════════════════════════════════════════
-const LICENSE_PUBLIC_KEY_B64 = 'BPcbk1/BSBeCJG+usvx9wTcNDfWuanhHX1iaQboleVmPXfdZUfNs+M/OwgPrL8bjiZbH9MxmxBd74wgxdGGkDoc='; // paste the public key from license_generator.py here
+const LICENSE_PUBLIC_KEY_B64 = 'BIehQem6hrOdMb9k71Yq55IsO6Q6vTt/+1JefMvydER2Mdm4HjnfoK50EAKCzt+JoepQjtxTpetIiBe49gFER9o='; // paste the public key from license_generator.py here
 
 function b64urlToBytes(b64url){
   let s=b64url.replace(/-/g,'+').replace(/_/g,'/');
@@ -1454,7 +1456,7 @@ function renderTable(){
       <td><span class="qty-num qty-used">${item.used}</span></td>
       <td><span class="qty-num" style="color:var(--text2)">${item.total}</span></td>
       <td><span style="font-family:var(--mono);font-size:13px;color:var(--text3)">${item.min}</span></td>
-      <td class="perm-price"><span style="font-size:12px;color:var(--text2)">${item.price?fmtMoney(item.price):'—'}</span></td>
+      <td class="perm-price"><span style="font-size:12px;color:var(--text2)">${item.price!=null?fmtMoney(item.price):'—'}</span></td>
       <td><span class="badge badge-${st}">${st==='ok'?'<i class="ti ti-check"></i>':st==='low'?'<i class="ti ti-alert-triangle"></i>':'<i class="ti ti-x"></i>'} ${sl[st]}</span></td>
       <td><div class="actions">
         <button class="btn btn-sm" title="Quick sell" onclick="quickSell(${item.id})" style="color:var(--accent);border-color:var(--accent-border)"><i class="ti ti-shopping-cart-plus"></i></button>
@@ -1706,7 +1708,7 @@ function renderPicker(){
       </div>
       <div class="picker-item-stock">
         <div class="picker-item-avail ${st}">${av} ${item.unit||'pcs'}</div>
-        <div class="picker-item-price">${item.price?fmtMoney(item.price):''}</div>
+        <div class="picker-item-price">${item.price!=null?fmtMoney(item.price):''}</div>
       </div>
       ${st!=='out'?`<button class="picker-add-btn" title="Add to cart" onclick="event.stopPropagation();addToCart(${item.id})"><i class="ti ti-plus"></i></button>`:'<span style="font-size:11px;color:var(--red);white-space:nowrap">Out of<br>stock</span>'}
     </div>`;
@@ -1949,17 +1951,65 @@ function buildReportHTML(){
   const saleRows=d.todaySales.length? d.todaySales.map(s=>`<tr><td>${escHtml(s.receiptNo)}</td><td>${new Date(s.ts).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</td><td>${escHtml(s.customer.name)}</td><td>${escHtml(s.items.map(i=>i.qty+'x '+i.name).join(', '))}</td><td>${fmtMoney(s.total)}</td></tr>`).join('') : '<tr><td colspan="5">No sales recorded today</td></tr>';
 
   return `<div>
-    <h2 style="margin:0 0 2px">${escHtml(settings.sysName||'Electro Stock')} — Daily Summary Report</h2>
+    <h2 style="margin:0 0 2px">${escHtml(settings.sysName||'Dinu Stock')} — Daily Summary Report</h2>
     <div style="color:#666;font-size:13px;margin-bottom:14px">${escHtml(settings.shopName||'')} &nbsp;|&nbsp; ${d.dateStr}</div>
     <table class="report-table"><caption>Overview</caption><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>${summaryRows}</tbody></table>
     <table class="report-table"><caption>Inventory — Available / Used / Total</caption><thead><tr><th>Item</th><th>Category</th><th>Available</th><th>Used</th><th>Total</th><th>Unit</th></tr></thead><tbody>${itemRows}</tbody></table>
     <table class="report-table"><caption>Today's Sales</caption><thead><tr><th>Ref. No.</th><th>Time</th><th>Customer</th><th>Items</th><th>Total</th></tr></thead><tbody>${saleRows}</tbody></table>
-    <div style="color:#999;font-size:11px;margin-top:6px">Generated automatically by ${escHtml(settings.sysName||'Electro Stock')}.</div>
+    <div style="color:#999;font-size:11px;margin-top:6px">Generated automatically by ${escHtml(settings.sysName||'Dinu Stock')}.</div>
   </div>`;
 }
 function renderReportPreview(){
   const box=document.getElementById('reportPreviewBox');
-  if(box) box.innerHTML=buildReportHTML();
+  if(box){
+    box.innerHTML=buildReportHTML();
+    makeReportTablesResizable();
+  }
+}
+function makeReportTablesResizable(){
+  document.querySelectorAll('.report-table').forEach(table=>{
+    const ths=table.querySelectorAll('thead th');
+    ths.forEach((th, index)=>{
+      if(index===ths.length-1) return;
+      if(th.querySelector('.resize-handle')) return;
+      const handle=document.createElement('div');
+      handle.className='resize-handle';
+      th.appendChild(handle);
+      handle.addEventListener('mousedown', e=>startReportColResize(e, table, index));
+    });
+  });
+}
+let reportColResizeState=null;
+function startReportColResize(e, table, colIndex){
+  e.preventDefault();
+  const ths=table.querySelectorAll('thead th');
+  const th=ths[colIndex];
+  const nextTh=ths[colIndex+1];
+  reportColResizeState={
+    startX:e.pageX,
+    th,
+    nextTh,
+    startWidth:th.offsetWidth,
+    nextStartWidth: nextTh? nextTh.offsetWidth : 0
+  };
+  document.addEventListener('mousemove', reportColResizeMove);
+  document.addEventListener('mouseup', reportColResizeEnd);
+}
+function reportColResizeMove(e){
+  if(!reportColResizeState) return;
+  const dx=e.pageX-reportColResizeState.startX;
+  const minWidth=40;
+  const newWidth=Math.max(minWidth, reportColResizeState.startWidth + dx);
+  reportColResizeState.th.style.width = newWidth + 'px';
+  if(reportColResizeState.nextTh){
+    const nextWidth=Math.max(minWidth, reportColResizeState.nextStartWidth - dx);
+    reportColResizeState.nextTh.style.width = nextWidth + 'px';
+  }
+}
+function reportColResizeEnd(){
+  document.removeEventListener('mousemove', reportColResizeMove);
+  document.removeEventListener('mouseup', reportColResizeEnd);
+  reportColResizeState=null;
 }
 async function copyReportTable(){
   const html=buildReportHTML();
@@ -1983,7 +2033,7 @@ async function copyReportTable(){
 // ── PLAIN-TEXT ALIGNED TABLE VERSION (for mailto: — email clients only accept plain text there) ──
 function buildSummaryReportTextTable(){
   const d=reportData();
-  let t = `${settings.sysName||'Electro Stock'} — Daily Summary Report\n`;
+  let t = `${settings.sysName||'Dinu Stock'} — Daily Summary Report\n`;
   t += `${settings.shopName||''}\n`;
   t += `Date: ${d.dateStr}\n`;
   t += `${'='.repeat(64)}\n\n`;
@@ -2010,14 +2060,14 @@ function buildSummaryReportTextTable(){
   } else {
     t += `(no sales recorded today)\n`;
   }
-  t += `\n${'='.repeat(64)}\nGenerated automatically by ${settings.sysName||'Electro Stock'}.`;
+  t += `\n${'='.repeat(64)}\nGenerated automatically by ${settings.sysName||'Dinu Stock'}.`;
   return t;
 }
 function sendSummaryReport(){
   const to=(settings.reportEmail||'').trim();
   if(!to){toast('Set a recipient email above first','error');return;}
   const body=buildSummaryReportTextTable();
-  const subject=`Daily Stock Summary — ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${settings.shopName||settings.sysName||'Electro Stock'}`;
+  const subject=`Daily Stock Summary — ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})} — ${settings.shopName||settings.sysName||'Dinu Stock'}`;
   let mailBody=body;
   if(mailBody.length>1800){
     mailBody=mailBody.slice(0,1750)+`\n\n...(truncated — use "Copy formatted table" for the full report)`;
@@ -2050,7 +2100,7 @@ function loadSettings(){
   const pv=document.getElementById('p_viewPrice'); if(pv) pv.checked=perm.viewPrice!==false;
   const pe=document.getElementById('p_exportData'); if(pe) pe.checked=perm.exportData!==false;
   const pn=document.getElementById('p_viewNotes'); if(pn) pn.checked=perm.viewNotes!==false;
-  const sn2=document.getElementById('s_sysName'); if(sn2) sn2.value=settings.sysName||'Electro Stock';
+  const sn2=document.getElementById('s_sysName'); if(sn2) sn2.value=settings.sysName||'Dinu Stock';
   const ac=document.getElementById('s_accent'); if(ac) ac.value=settings.accent||'#d4501a';
   const bgc=document.getElementById('s_bg'); if(bgc) bgc.value=settings.bg||'#f5f4f0';
   const sfc=document.getElementById('s_surface'); if(sfc) sfc.value=settings.surface||'#ffffff';
@@ -2247,7 +2297,7 @@ async function saveGithubConfigFromSettings(){
   const cfg={
     owner:(document.getElementById('s_gh_owner').value||'').trim(),
     repo:(document.getElementById('s_gh_repo').value||'').trim(),
-    path:(document.getElementById('s_gh_path').value||'').trim()||'electro_stock_data.json',
+    path:(document.getElementById('s_gh_path').value||'').trim()||'Dinu_stock_data.json',
     branch:(document.getElementById('s_gh_branch').value||'').trim()||'main',
     token:(document.getElementById('s_gh_token').value||'').trim()
   };
@@ -2343,7 +2393,7 @@ function saveBootGithubConfig(){
   const cfg={
     owner: (document.getElementById('bg_owner').value||'').trim(),
     repo: (document.getElementById('bg_repo').value||'').trim(),
-    path: (document.getElementById('bg_path').value||'').trim() || 'electro_stock_data.json',
+    path: (document.getElementById('bg_path').value||'').trim() || 'Dinu_stock_data.json',
     branch: (document.getElementById('bg_branch').value||'').trim() || 'main',
     token: (document.getElementById('bg_token').value||'').trim()
   };
@@ -2385,7 +2435,7 @@ function applyConnectionProfile(profile){
     if(!g.owner||!g.repo){ alert('That profile is missing the GitHub repository details.'); return; }
     setGithubConfig({
       owner: g.owner||'', repo: g.repo||'',
-      path: g.path||'electro_stock_data.json', branch: g.branch||'main',
+      path: g.path||'Dinu_stock_data.json', branch: g.branch||'main',
       token: g.token||'' // only set if the profile actually included one
     });
     setSyncModeLS('github');
@@ -2432,7 +2482,7 @@ async function downloadConnectionProfile(){
   const blob=new Blob([JSON.stringify(profile,null,2)], {type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url; a.download='electro-stock-connection-profile.json';
+  a.href=url; a.download='Dinu-stock-connection-profile.json';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('Profile downloaded — send it to the new user.','success');
@@ -2616,7 +2666,7 @@ function showLoginScreen(){
   document.getElementById('loginUser').value='';
   document.getElementById('loginPass').value='';
   document.getElementById('loginScreen').style.display='flex';
-  const sysNameEl=document.getElementById('loginSysName'); if(sysNameEl) sysNameEl.textContent=settings.sysName||'Electro Stock';
+  const sysNameEl=document.getElementById('loginSysName'); if(sysNameEl) sysNameEl.textContent=settings.sysName||'Dinu Stock';
   const iconEl=document.getElementById('loginLogoIcon');
   if(iconEl) iconEl.innerHTML = settings.logoData ? `<img src="${settings.logoData}">` : '<i class="ti ti-bolt"></i>';
   setTimeout(()=>document.getElementById('loginUser').focus(),100);
@@ -2701,8 +2751,8 @@ function applyBranding(){
   document.documentElement.style.setProperty('--bg', settings.bg||'#f5f4f0');
   document.documentElement.style.setProperty('--surface', settings.surface||'#ffffff');
   const nameEls=[document.getElementById('topSysName')];
-  nameEls.forEach(el=>{ if(el) el.textContent=settings.sysName||'Electro Stock'; });
-  document.title = (settings.sysName||'Electro Stock')+' — Inventory & Sales';
+  nameEls.forEach(el=>{ if(el) el.textContent=settings.sysName||'Dinu Stock'; });
+  document.title = (settings.sysName||'Dinu Stock')+' — Inventory & Sales';
   const iconTargets=['topLogoIcon'];
   iconTargets.forEach(id=>{
     const el=document.getElementById(id);
@@ -2793,7 +2843,7 @@ function clearLogo(){
 }
 async function saveBranding(){
   if(!requireAdmin())return;
-  settings.sysName=(document.getElementById('s_sysName').value||'Electro Stock').trim();
+  settings.sysName=(document.getElementById('s_sysName').value||'Dinu Stock').trim();
   settings.accent=document.getElementById('s_accent').value||'#d4501a';
   settings.bg=document.getElementById('s_bg').value||'#f5f4f0';
   settings.surface=document.getElementById('s_surface').value||'#ffffff';
@@ -2906,3 +2956,4 @@ bootSequence();
 </div><!-- /appShell -->
 </body>
 </html>
+
