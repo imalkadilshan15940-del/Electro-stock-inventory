@@ -1,0 +1,22 @@
+# Personal / machine-specific — contains your local file path
+electro_sync_config.json
+
+# THE ACTUAL LICENSE PRIVATE KEY — never commit this. Generated
+# automatically the first time you run license_generator.py.
+license_private_key.pem
+license_public_key.txt
+
+# The private license-issuing tool and everything it produces —
+# never send to customers, never commit to a public repo
+license_generator.py
+issued_licenses.log
+*.lic
+
+# Auto-generated log files
+watchdog_log.txt
+server_output_log.txt
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.tmp

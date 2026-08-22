@@ -1,0 +1,263 @@
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Glu-liquid-20ml",
+      "sku": "Glu-liq-20ML",
+      "category": "Glue",
+      "unit": "pcs",
+      "total": 19,
+      "used": 3,
+      "min": 10,
+      "price": 40,
+      "warranty": 0,
+      "notes": "Atlas"
+    },
+    {
+      "id": 2,
+      "name": "Battery-2A",
+      "sku": "BT-2A",
+      "category": "Battery",
+      "unit": "pcs",
+      "total": 6,
+      "used": 3,
+      "min": 10,
+      "price": 100,
+      "warranty": 36,
+      "notes": "KODAK"
+    },
+    {
+      "id": 5,
+      "name": "Pen-Color-Ten",
+      "sku": "Pen-Cl-10",
+      "category": "Pen",
+      "unit": "Pcs",
+      "total": 5,
+      "used": 2,
+      "min": 10,
+      "price": 125,
+      "notes": "Ten",
+      "warranty": 0
+    }
+  ],
+  "history": [
+    {
+      "id": 7,
+      "itemId": 5,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-2",
+      "ts": 1786262228461,
+      "by": "admin"
+    },
+    {
+      "id": 6,
+      "itemId": 2,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-2",
+      "ts": 1786262228461,
+      "by": "admin"
+    },
+    {
+      "id": 5,
+      "itemId": 1,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-2",
+      "ts": 1786262228461,
+      "by": "admin"
+    },
+    {
+      "id": 4,
+      "itemId": 5,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to imalka",
+      "receiptNo": "INV-1",
+      "ts": 1786261933384,
+      "by": "admin"
+    },
+    {
+      "id": 3,
+      "itemId": 2,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to imalka",
+      "receiptNo": "INV-1",
+      "ts": 1786261933384,
+      "by": "admin"
+    },
+    {
+      "id": 2,
+      "itemId": 1,
+      "type": "sale",
+      "qty": 2,
+      "note": "Sold to imalka",
+      "receiptNo": "INV-1",
+      "ts": 1786261933384,
+      "by": "admin"
+    },
+    {
+      "id": 1,
+      "itemId": 2,
+      "type": "damage",
+      "qty": 1,
+      "note": "broke",
+      "ts": 1786261782002,
+      "by": "admin"
+    }
+  ],
+  "sales": [
+    {
+      "id": 2,
+      "receiptNo": "INV-2",
+      "ts": 1786262228461,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": ""
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 1,
+          "name": "Glu-liquid-20ml",
+          "sku": "Glu-liq-20ML",
+          "unit": "pcs",
+          "price": 40,
+          "qty": 1,
+          "warranty": 0
+        },
+        {
+          "id": 2,
+          "name": "Battery-2A",
+          "sku": "BT-2A",
+          "unit": "pcs",
+          "price": 100,
+          "qty": 1,
+          "warranty": 36
+        },
+        {
+          "id": 5,
+          "name": "Pen-Color-Ten",
+          "sku": "Pen-Cl-10",
+          "unit": "Pcs",
+          "price": 125,
+          "qty": 1,
+          "warranty": 0
+        }
+      ],
+      "subtotal": 265,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 265
+    },
+    {
+      "id": 1,
+      "receiptNo": "INV-1",
+      "ts": 1786261933384,
+      "customer": {
+        "name": "imalka",
+        "phone": "0717177330"
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 1,
+          "name": "Glu-liquid-20ml",
+          "sku": "Glu-liq-20ML",
+          "unit": "pcs",
+          "price": 40,
+          "qty": 2,
+          "warranty": 0
+        },
+        {
+          "id": 2,
+          "name": "Battery-2A",
+          "sku": "BT-2A",
+          "unit": "pcs",
+          "price": 100,
+          "qty": 1,
+          "warranty": 36
+        },
+        {
+          "id": 5,
+          "name": "Pen-Color-Ten",
+          "sku": "Pen-Cl-10",
+          "unit": "Pcs",
+          "price": 125,
+          "qty": 1,
+          "warranty": 0
+        }
+      ],
+      "subtotal": 305,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 305
+    }
+  ],
+  "settings": {
+    "shopName": "HYDI'S BOOK HEVEN",
+    "addr1": "No. 666/C/2",
+    "addr2": "Wahatiyagama, Ja-Ela",
+    "phone": "0703538328",
+    "email": "",
+    "footer": "Thank you for your purchase!",
+    "prefix": "INV-",
+    "startNo": 1,
+    "currency": "Rs.",
+    "reportEmail": "",
+    "sysName": "HYDI'S BOOK HEVEN",
+    "logoData": "",
+    "accent": "#d4501a",
+    "bg": "#f5f4f0",
+    "surface": "#ffffff",
+    "categories": [
+      "Battery",
+      "Book",
+      "Pen",
+      "Pencile",
+      "Eraser",
+      "Glue",
+      "A4",
+      "Selo Tape",
+      "Tipex",
+      "Laminating Paper",
+      "Thread Corn"
+    ],
+    "license": {
+      "key": "eyJsaWNlbnNlZSI6IkRpbnUgc2hvcCIsImV4cGlyeSI6IjIwMjYtMDgtMTIiLCJrZXkiOiJpbWFsa2EiLCJpc3N1ZWQiOiIyMDI2LTA4LTA4In0.BFC7Mx2rA4uQilPbZElcgxf-iSSeCHyBAwuL9iDUHcDTyj6MA9RliMyBz5mc2ec7QrKcSusn-04LFzU-DFqWPQ"
+    },
+    "permissions": {
+      "reportDamage": true,
+      "viewPrice": true,
+      "exportData": true,
+      "viewNotes": true
+    },
+    "users": [
+      {
+        "username": "admin",
+        "password": "159402315",
+        "role": "admin"
+      },
+      {
+        "username": "dinu",
+        "password": "1989",
+        "role": "admin"
+      },
+      {
+        "username": "dinu2",
+        "password": "1989",
+        "role": "user"
+      }
+    ]
+  },
+  "syncedAt": "2026-08-09T08:00:01.763Z"
+}
