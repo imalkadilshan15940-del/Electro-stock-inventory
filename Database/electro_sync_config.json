@@ -77,7 +77,7 @@
     {
       "id": 7,
       "name": "book",
-      "sku": "test10",
+      "sku": "",
       "category": "Fuses",
       "unit": "pcs",
       "total": 101,
@@ -85,7 +85,9 @@
       "min": 5,
       "price": 50,
       "notes": "",
-      "warranty": 0
+      "warranty": 0,
+      "barcode": "4796011250126",
+      "sellPrice": 0
     },
     {
       "id": 8,
@@ -345,5 +347,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-22T18:30:57.491Z"
+  "syncedAt": "2026-08-22T18:55:01.908Z"
 }
