@@ -183,7 +183,14 @@ tr:hover td{background:#fafaf7}
 .disc-row select{padding:7px 9px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:13px;outline:none;background:var(--surface)}
 
 /* Sales history table */
-.sales-table{min-width:720px}
+.sales-table{min-width:0;width:100%;table-layout:auto}
+.sales-table th{padding:8px 6px;font-size:9.5px;white-space:nowrap}
+.sales-table td{padding:8px 6px;font-size:12px;white-space:normal;overflow-wrap:break-word;word-break:break-word}
+.sales-table td .actions{flex-wrap:wrap;gap:4px}
+.items-table{min-width:0;width:100%;table-layout:auto}
+.items-table th{padding:8px 6px;font-size:9.5px;white-space:nowrap}
+.items-table td{padding:8px 6px;font-size:12px;white-space:normal;overflow-wrap:break-word;word-break:break-word}
+.items-table td .actions{flex-wrap:wrap;gap:4px}
 .receipt-link{color:var(--accent);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:4px;font-weight:500}
 .receipt-link:hover{text-decoration:underline}
 
@@ -242,7 +249,7 @@ tr:hover td{background:#fafaf7}
 .receipt-meta{padding:10px 20px;border-bottom:1px dashed #ccc;display:flex;justify-content:space-between;font-size:11px;color:#444}
 .receipt-cust{padding:8px 20px;border-bottom:1px dashed #ccc;font-size:11px;color:#444}
 .receipt-items{padding:10px 20px}
-.receipt-items table{width:100%;border-collapse:collapse;font-size:12px}
+.receipt-items table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:12px}
 .receipt-items th{text-align:left;padding:4px 0;border-bottom:1px solid #ccc;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#666}
 .receipt-items td{padding:5px 0;border-bottom:1px dotted #e0e0e0;vertical-align:top}
 .receipt-items td:last-child{text-align:right;white-space:nowrap}
@@ -486,13 +493,12 @@ body.no-notes-perm .perm-notes{display:none !important}
         <option value="out">Out of stock</option>
       </select>
       <div class="toolbar-right">
-        <button class="btn btn-sm" onclick="clearSearch()"><i class="ti ti-x"></i></button>
         <button class="btn btn-sm btn-primary admin-only" onclick="showAddItem()"><i class="ti ti-plus"></i> Add Item</button>
       </div>
     </div>
     <div class="table-wrap">
       <div class="table-scroll">
-        <table>
+        <table class="items-table">
           <thead><tr>
             <th onclick="sortBy('name')" id="th-name">Item / SKU <span class="sort-icon ti ti-selector"></span></th>
             <th onclick="sortBy('category')" id="th-category">Category <span class="sort-icon ti ti-selector"></span></th>
@@ -502,6 +508,7 @@ body.no-notes-perm .perm-notes{display:none !important}
             <th onclick="sortBy('total')" id="th-total">Total <span class="sort-icon ti ti-selector"></span></th>
             <th>Min. stock</th>
             <th>Unit price</th>
+            <th>Sell. Price</th>
             <th>Status</th>
             <th>Actions</th>
           </tr></thead>
@@ -601,14 +608,20 @@ body.no-notes-perm .perm-notes{display:none !important}
       <button class="btn btn-sm" onclick="exportSalesCSV()"><i class="ti ti-download"></i> Export sales</button>
     </div>
     <!-- Sales summary -->
-    <div class="summary-grid" id="salesSummaryGrid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px"></div>
+    <div class="summary-grid" id="salesSummaryGrid" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px"></div>
     <div class="toolbar">
       <div class="search-wrap">
         <i class="ti ti-search"></i>
         <input class="search-input" id="salesSearchInput" type="text" placeholder="Search by reference no., customer, phone…" oninput="renderSalesTable()">
       </div>
-      <div class="toolbar-right">
-        <button class="btn btn-sm" onclick="document.getElementById('salesSearchInput').value='';renderSalesTable()"><i class="ti ti-x"></i> Clear</button>
+      <div class="toolbar-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--text3)">From</label>
+          <input type="date" id="salesDateFrom" class="search-input" style="padding:6px 10px;width:auto" oninput="renderSalesTable()">
+          <label style="font-size:12px;color:var(--text3)">To</label>
+          <input type="date" id="salesDateTo" class="search-input" style="padding:6px 10px;width:auto" oninput="renderSalesTable()">
+        </div>
+        <button class="btn btn-sm" onclick="document.getElementById('salesSearchInput').value='';document.getElementById('salesDateFrom').value='';document.getElementById('salesDateTo').value='';renderSalesTable()"><i class="ti ti-x"></i> Clear</button>
       </div>
     </div>
     <div class="table-wrap">
@@ -622,6 +635,7 @@ body.no-notes-perm .perm-notes{display:none !important}
             <th>Payment</th>
             <th>Discount</th>
             <th>Total</th>
+            <th>Profit</th>
             <th>Warranty</th>
             <th>Actions</th>
           </tr></thead>
@@ -883,6 +897,7 @@ body.no-notes-perm .perm-notes{display:none !important}
         <div class="field"><label>Unit price (Rs.)</label><input id="f_price" type="number" min="0" step="0.01" placeholder="0.00"></div>
       </div>
       <div class="field-row">
+        <div class="field"><label>Sell. Price (Rs.)</label><input id="f_sellPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
         <div class="field"><label>Default warranty (months)</label><input id="f_warranty" type="number" min="0" placeholder="e.g. 12"><span class="field-hint">Auto-filled into New Sale for this item. 0 = no warranty.</span></div>
       </div>
       <div class="field"><label>Notes</label><input id="f_notes" type="text" placeholder="Supplier, location, spec…"></div>
@@ -952,7 +967,7 @@ body.no-notes-perm .perm-notes{display:none !important}
     <div class="modal-body">
       <div class="info-box"><strong>How to import from Excel:</strong><br>1. File → Save As → <strong>CSV UTF-8 (.csv)</strong><br>2. Row 1 must have the column headers shown below<br>3. Upload the CSV here</div>
       <div><div class="section-title">Required headers (row 1):</div>
-        <div class="csv-template">name | sku | category | unit | total | used | min_stock | price</div>
+        <div class="csv-template">name | sku | category | unit | total | used | min_stock | price | sell_price</div>
         <div style="font-size:11px;color:var(--text3);margin-top:6px">Only <strong>name</strong> is required. Others are optional.</div>
       </div>
       <div class="warning-box"><i class="ti ti-alert-triangle"></i> Import <strong>adds</strong> new items. Existing items are not overwritten.</div>
@@ -1350,6 +1365,10 @@ function warrantyExpiryTs(saleTs, months){
   d.setMonth(d.getMonth()+(months||0));
   return d.getTime();
 }
+function saleProfit(sale){
+  const grossProfit=(sale.items||[]).reduce((s,i)=>s+((i.price||0)-(i.cost||0))*i.qty,0);
+  return grossProfit-(sale.discAmt||0);
+}
 function saleWarrantyStatus(sale){
   const withW=(sale.items||[]).filter(i=>i.warranty>0);
   if(!withW.length) return {label:'—', cls:''};
@@ -1457,6 +1476,7 @@ function renderTable(){
       <td><span class="qty-num" style="color:var(--text2)">${item.total}</span></td>
       <td><span style="font-family:var(--mono);font-size:13px;color:var(--text3)">${item.min}</span></td>
       <td class="perm-price"><span style="font-size:12px;color:var(--text2)">${item.price!=null?fmtMoney(item.price):'—'}</span></td>
+      <td class="perm-price"><span style="font-size:12px;color:var(--text2)">${item.sellPrice!=null?fmtMoney(item.sellPrice):'—'}</span></td>
       <td><span class="badge badge-${st}">${st==='ok'?'<i class="ti ti-check"></i>':st==='low'?'<i class="ti ti-alert-triangle"></i>':'<i class="ti ti-x"></i>'} ${sl[st]}</span></td>
       <td><div class="actions">
         <button class="btn btn-sm" title="Quick sell" onclick="quickSell(${item.id})" style="color:var(--accent);border-color:var(--accent-border)"><i class="ti ti-shopping-cart-plus"></i></button>
@@ -1490,6 +1510,7 @@ function showAddItem(){
   document.getElementById('f_used').value='0';
   document.getElementById('f_min').value='5';
   document.getElementById('f_price').value='';
+  document.getElementById('f_sellPrice').value='';
   document.getElementById('f_warranty').value='';
   document.getElementById('itemModal').style.display='flex';
   setTimeout(()=>document.getElementById('f_name').focus(),100);
@@ -1506,6 +1527,7 @@ function showEditItem(id){
   document.getElementById('f_used').value=item.used;
   document.getElementById('f_min').value=item.min;
   document.getElementById('f_price').value=item.price||'';
+  document.getElementById('f_sellPrice').value=item.sellPrice||'';
   document.getElementById('f_warranty').value=item.warranty||'';
   document.getElementById('f_notes').value=item.notes||'';
   document.getElementById('itemModal').style.display='flex';
@@ -1516,7 +1538,7 @@ async function saveItem(){
   const total=parseInt(document.getElementById('f_total').value)||0;
   const used=Math.min(parseInt(document.getElementById('f_used').value)||0,total);
   if(!name){toast('Item name is required','error');return;}
-  const data={name,sku:document.getElementById('f_sku').value.trim(),category:document.getElementById('f_cat').value,unit:document.getElementById('f_unit').value.trim()||'pcs',total,used,min:parseInt(document.getElementById('f_min').value)||0,price:parseFloat(document.getElementById('f_price').value)||0,warranty:parseInt(document.getElementById('f_warranty').value)||0,notes:document.getElementById('f_notes').value.trim()};
+  const data={name,sku:document.getElementById('f_sku').value.trim(),category:document.getElementById('f_cat').value,unit:document.getElementById('f_unit').value.trim()||'pcs',total,used,min:parseInt(document.getElementById('f_min').value)||0,price:parseFloat(document.getElementById('f_price').value)||0,sellPrice:parseFloat(document.getElementById('f_sellPrice').value)||0,warranty:parseInt(document.getElementById('f_warranty').value)||0,notes:document.getElementById('f_notes').value.trim()};
   if(editId){items[items.findIndex(i=>i.id===editId)]={...items.find(i=>i.id===editId),...data};toast('Item updated','success');}
   else{items.push({id:nextId(items),...data});toast('Item added','success');}
   closeModal('itemModal');
@@ -1708,7 +1730,7 @@ function renderPicker(){
       </div>
       <div class="picker-item-stock">
         <div class="picker-item-avail ${st}">${av} ${item.unit||'pcs'}</div>
-        <div class="picker-item-price">${item.price!=null?fmtMoney(item.price):''}</div>
+        <div class="picker-item-price">${item.sellPrice!=null?fmtMoney(item.sellPrice):''}</div>
       </div>
       ${st!=='out'?`<button class="picker-add-btn" title="Add to cart" onclick="event.stopPropagation();addToCart(${item.id})"><i class="ti ti-plus"></i></button>`:'<span style="font-size:11px;color:var(--red);white-space:nowrap">Out of<br>stock</span>'}
     </div>`;
@@ -1720,7 +1742,7 @@ function addToCart(id){
   if(av<=0){toast('This item is out of stock','error');return;}
   const existing=cart.find(c=>c.id===id);
   if(existing){if(existing.qty>=av){toast(`Max available: ${av} ${item.unit||'pcs'}`,'error');return;}existing.qty++;}
-  else{cart.push({id,name:item.name,sku:item.sku||'',unit:item.unit||'pcs',price:item.price||0,qty:1,warranty:item.warranty||0});}
+  else{cart.push({id,name:item.name,sku:item.sku||'',unit:item.unit||'pcs',price:item.sellPrice||0,cost:item.price||0,qty:1,warranty:item.warranty||0});}
   renderCart(); renderPicker();
   toast(`${item.name} added`,'success');
 }
@@ -1848,7 +1870,7 @@ function buildReceiptHTML(sale){
   return `<div class="receipt-header"><div class="receipt-shop-name">${escHtml(s.shopName)}</div><div class="receipt-shop-sub">${escHtml(s.addr1)}${s.addr2?', '+escHtml(s.addr2):''}<br>${s.phone?'Tel: '+escHtml(s.phone):''}${s.email?' | '+escHtml(s.email):''}</div></div>
     <div class="receipt-meta"><div><strong>Receipt No:</strong> <span class="receipt-no">${escHtml(sale.receiptNo)}</span></div><div><strong>Date:</strong> ${fmtDateTime(sale.ts)}</div></div>
     <div class="receipt-cust"><strong>Customer:</strong> ${escHtml(sale.customer.name)}${sale.customer.phone?' | Tel: '+escHtml(sale.customer.phone):''} | <strong>Payment:</strong> ${escHtml(sale.payMethod)}${sale.note?'<br><strong>Note:</strong> '+escHtml(sale.note):''}</div>
-    <div class="receipt-items"><table><thead><tr><th style="width:40%">Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
+    <div class="receipt-items"><table class="receipt-table"><thead><tr><th style="width:40%">Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>${itemRows}</tbody></table></div>
     <div class="receipt-totals"><div class="receipt-total-row"><span>Subtotal</span><span>${fmtMoney(sale.subtotal)}</span></div><div class="receipt-total-row" style="color:#888"><span>Discount${sale.discVal>0?' ('+sale.discVal+(sale.discType==='pct'?'%':' '+s.currency)+')':''}</span><span>− ${fmtMoney(sale.discAmt)}</span></div><div class="receipt-total-row grand"><span>TOTAL</span><span>${fmtMoney(sale.total)}</span></div></div>
     <div class="receipt-footer">${escHtml(s.footer||'Thank you!')}<br><span style="font-size:10px;color:#aaa">*** Computer generated receipt ***</span></div>`;
 }
@@ -1860,26 +1882,38 @@ function printReceipt(){ window.print(); }
 function getFilteredSales(){
   const qEl=document.getElementById('salesSearchInput');
   const q=qEl?qEl.value.toLowerCase().trim():'';
-  if(!q) return sales;
-  return sales.filter(s=>
-    (s.receiptNo||'').toLowerCase().includes(q) ||
-    (s.customer.name||'').toLowerCase().includes(q) ||
-    (s.customer.phone||'').toLowerCase().includes(q)
-  );
+  const fromEl=document.getElementById('salesDateFrom');
+  const toEl=document.getElementById('salesDateTo');
+  const fromTs=fromEl&&fromEl.value?new Date(fromEl.value+'T00:00:00').getTime():null;
+  const toTs=toEl&&toEl.value?new Date(toEl.value+'T23:59:59.999').getTime():null;
+  return sales.filter(s=>{
+    if(fromTs!=null && s.ts<fromTs) return false;
+    if(toTs!=null && s.ts>toTs) return false;
+    if(!q) return true;
+    return (s.receiptNo||'').toLowerCase().includes(q) ||
+      (s.customer.name||'').toLowerCase().includes(q) ||
+      (s.customer.phone||'').toLowerCase().includes(q);
+  });
 }
 function renderSalesTable(){
   const totalSales=sales.reduce((s,r)=>s+r.total,0);
   const todayStart=new Date(); todayStart.setHours(0,0,0,0);
-  const todaySales=sales.filter(r=>r.ts>=todayStart.getTime()).reduce((s,r)=>s+r.total,0);
+  const todaySalesList=sales.filter(r=>r.ts>=todayStart.getTime());
+  const todaySales=todaySalesList.reduce((s,r)=>s+r.total,0);
+  const totalProfit=sales.reduce((s,r)=>s+saleProfit(r),0);
+  const todayProfit=todaySalesList.reduce((s,r)=>s+saleProfit(r),0);
   document.getElementById('salesSummaryGrid').innerHTML=`
     <div class="stat-card s-total"><div class="stat-label"><i class="ti ti-receipt"></i> Total sales</div><div class="stat-value">${sales.length}</div><div class="stat-sub">All transactions</div></div>
     <div class="stat-card s-ok"><div class="stat-label"><i class="ti ti-cash"></i> Total revenue</div><div class="stat-value" style="font-size:18px">${fmtMoney(totalSales)}</div><div class="stat-sub">All time</div></div>
-    <div class="stat-card s-low"><div class="stat-label"><i class="ti ti-calendar"></i> Today</div><div class="stat-value" style="font-size:18px">${fmtMoney(todaySales)}</div><div class="stat-sub">Today's revenue</div></div>`;
+    <div class="stat-card s-ok"><div class="stat-label"><i class="ti ti-trending-up"></i> Total profit</div><div class="stat-value" style="font-size:18px">${fmtMoney(totalProfit)}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card s-low"><div class="stat-label"><i class="ti ti-calendar"></i> Today</div><div class="stat-value" style="font-size:18px">${fmtMoney(todaySales)}</div><div class="stat-sub">Today's revenue</div></div>
+    <div class="stat-card s-low"><div class="stat-label"><i class="ti ti-trending-up"></i> Today's profit</div><div class="stat-value" style="font-size:18px">${fmtMoney(todayProfit)}</div><div class="stat-sub">Today</div></div>`;
   const tbody=document.getElementById('salesTableBody');
   const filtered=getFilteredSales();
-  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><i class="ti ti-receipt-off"></i><p>No sales match</p></div></td></tr>`;document.getElementById('salesFooter').innerHTML='';return;}
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state"><i class="ti ti-receipt-off"></i><p>No sales match</p></div></td></tr>`;document.getElementById('salesFooter').innerHTML='';return;}
   tbody.innerHTML=filtered.map(s=>{
     const w=saleWarrantyStatus(s);
+    const profit=saleProfit(s);
     return `<tr>
     <td><span style="font-family:var(--mono);font-weight:600;color:var(--accent)">${escHtml(s.receiptNo)}</span></td>
     <td><span style="font-size:12px">${fmtDateTime(s.ts)}</span></td>
@@ -1888,13 +1922,15 @@ function renderSalesTable(){
     <td><span class="badge badge-cat">${escHtml(s.payMethod)}</span></td>
     <td><span style="font-family:var(--mono);font-size:12px;color:var(--green)">${s.discAmt>0?'− '+fmtMoney(s.discAmt):'—'}</span></td>
     <td><span style="font-family:var(--mono);font-weight:600">${fmtMoney(s.total)}</span></td>
+    <td><span style="font-family:var(--mono);font-weight:600;color:${profit>=0?'var(--green)':'var(--red)'}">${fmtMoney(profit)}</span></td>
     <td>${w.cls?`<span class="badge ${w.cls}" style="font-size:10px">${w.label}</span>`:'<span style="color:var(--text3);font-size:12px">—</span>'}</td>
     <td><div class="actions">
       <button class="btn btn-sm btn-green" onclick="reprintReceipt(${s.id})" title="Reprint"><i class="ti ti-printer"></i></button>
       <button class="btn btn-sm btn-danger admin-only" onclick="deleteSale(${s.id})" title="Delete"><i class="ti ti-trash"></i></button>
     </div></td>
   </tr>`;}).join('');
-  document.getElementById('salesFooter').innerHTML=`<strong>${filtered.length}</strong> of <strong>${sales.length}</strong> sales shown | Total: <strong>${fmtMoney(totalSales)}</strong>`;
+  const filteredProfit=filtered.reduce((s,r)=>s+saleProfit(r),0);
+  document.getElementById('salesFooter').innerHTML=`<span><strong>${filtered.length}</strong> of <strong>${sales.length}</strong> sales shown</span><span>Total: <strong>${fmtMoney(totalSales)}</strong> &nbsp;|&nbsp; Profit: <strong>${fmtMoney(filteredProfit)}</strong></span>`;
 }
 function reprintReceipt(id){ const sale=sales.find(s=>s.id===id); if(sale) buildAndShowReceipt(sale); }
 async function deleteSale(id){
@@ -2078,8 +2114,8 @@ function sendSummaryReport(){
 }
 
 function exportSalesCSV(){
-  const headers=['Reference No','Date','Customer','Phone','Items','Payment','Subtotal','Discount','Total','Warranty Status'];
-  const rows=sales.map(s=>[s.receiptNo,fmtDateTime(s.ts),s.customer.name,s.customer.phone||'',s.items.map(i=>i.qty+'x '+i.name+(i.warranty?' ('+i.warranty+'mo warranty)':'')).join('; '),s.payMethod,s.subtotal,s.discAmt,s.total,saleWarrantyStatus(s).label]);
+  const headers=['Reference No','Date','Customer','Phone','Items','Payment','Subtotal','Discount','Total','Profit','Warranty Status'];
+  const rows=sales.map(s=>[s.receiptNo,fmtDateTime(s.ts),s.customer.name,s.customer.phone||'',s.items.map(i=>i.qty+'x '+i.name+(i.warranty?' ('+i.warranty+'mo warranty)':'')).join('; '),s.payMethod,s.subtotal,s.discAmt,s.total,saleProfit(s),saleWarrantyStatus(s).label]);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=`sales_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   toast('Sales exported','success');
@@ -2144,29 +2180,55 @@ function processCSV(file){
   if(!requireAdmin())return;
   Papa.parse(file,{header:true,skipEmptyLines:true,dynamicTyping:true,
     complete:async function(res){
-      let added=0,skipped=0;
+      let added=0,skipped=0,updated=0;
       res.data.forEach(row=>{
         const name=String(row.name||row.Name||'').trim();
         if(!name){skipped++;return;}
-        items.push({id:nextId(items),name,sku:String(row.sku||row.SKU||'').trim(),category:String(row.category||row.Category||'Other').trim(),unit:String(row.unit||row.Unit||'pcs').trim(),total:parseInt(row.total||row.Total)||0,used:parseInt(row.used||row.Used)||0,min:parseInt(row.min_stock||row.min||row.Min)||5,price:parseFloat(row.price||row.Price)||0,notes:String(row.notes||row.Notes||'').trim()});
-        added++;
+        const sku=String(row.sku||row.SKU||'').trim();
+        const fields={
+          category:String(row.category||row.Category||'Other').trim(),
+          unit:String(row.unit||row.Unit||'pcs').trim(),
+          total:parseInt(row.total||row.Total)||0,
+          used:parseInt(row.used||row.Used)||0,
+          min:parseInt(row.min_stock||row.min||row.Min)||5,
+          price:parseFloat(row.price||row.Price)||0,
+          sellPrice:parseFloat(row.sell_price||row.sellPrice||row.Sell_Price||row.SellPrice||0)||0,
+          notes:String(row.notes||row.Notes||'').trim()
+        };
+        // Match existing item by SKU (if given) first, else fall back to name — both case-insensitive.
+        const existing=items.find(i=>
+          (sku && i.sku && i.sku.trim().toLowerCase()===sku.toLowerCase()) ||
+          (!sku && i.name.trim().toLowerCase()===name.toLowerCase())
+        );
+        if(existing){
+          Object.assign(existing,fields);
+          existing.name=name;
+          if(sku) existing.sku=sku;
+          updated++;
+        }else{
+          items.push({id:nextId(items),name,sku,...fields});
+          added++;
+        }
       });
       render();closeModal('importModal');
-      toast(`${added} item(s) imported${skipped?' ('+skipped+' skipped)':''}`, 'success');
+      const parts=[];
+      if(updated) parts.push(updated+' updated');
+      if(skipped) parts.push(skipped+' skipped (no name)');
+      toast(`${added} item(s) imported${parts.length?' ('+parts.join(', ')+')':''}`, 'success');
       await save();
     },
     error:function(){toast('Error reading CSV file','error');}
   });
 }
 function exportCSV(){
-  const headers=['Name','SKU','Category','Unit','Total','Used','Available','Min Stock','Unit Price','Notes','Status'];
-  const rows=items.map(i=>[i.name,i.sku||'',i.category,i.unit,i.total,i.used,getAvailable(i),i.min,i.price||0,i.notes||'',getStatus(i)==='ok'?'In Stock':getStatus(i)==='low'?'Low Stock':'Out of Stock']);
+  const headers=['Name','SKU','Category','Unit','Total','Used','Available','Min Stock','Unit Price','Sell. Price','Notes','Status'];
+  const rows=items.map(i=>[i.name,i.sku||'',i.category,i.unit,i.total,i.used,getAvailable(i),i.min,i.price||0,i.sellPrice||0,i.notes||'',getStatus(i)==='ok'?'In Stock':getStatus(i)==='low'?'Low Stock':'Out of Stock']);
   const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download=`inventory_${new Date().toISOString().slice(0,10)}.csv`;a.click();
   toast('Exported','success');
 }
 function downloadTemplate(){
-  const csv='name,sku,category,unit,total,used,min_stock,price,notes\nCircuit Breaker 20A,CB-20A-001,Breakers,pcs,100,0,10,450,Havells brand\n';
+  const csv='name,sku,category,unit,total,used,min_stock,price,sell_price,notes\nCircuit Breaker 20A,CB-20A-001,Breakers,pcs,100,0,10,450,550,Havells brand\n';
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='inventory_template.csv';a.click();
 }
 function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('catFilter').value='';document.getElementById('statusFilter').value='';renderTable();}
