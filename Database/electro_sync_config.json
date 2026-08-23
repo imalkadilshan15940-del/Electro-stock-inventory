@@ -292,6 +292,18 @@
       "total": 200
     }
   ],
+  "expenses": [
+    {
+      "id": 1,
+      "date": "2026-08-23",
+      "category": "Rent",
+      "desc": "current bill",
+      "amount": 3000,
+      "paidBy": "Cash",
+      "note": "",
+      "addedBy": "admin"
+    }
+  ],
   "settings": {
     "shopName": "My Electrical Shop",
     "addr1": "No. 1, Main Street",
@@ -347,5 +359,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-22T18:55:46.740Z"
+  "syncedAt": "2026-08-23T13:29:56.981Z"
 }
