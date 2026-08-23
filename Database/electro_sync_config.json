@@ -81,7 +81,7 @@
       "category": "Fuses",
       "unit": "pcs",
       "total": 101,
-      "used": 22,
+      "used": 23,
       "min": 5,
       "price": 50,
       "notes": "",
@@ -103,6 +103,16 @@
     }
   ],
   "history": [
+    {
+      "id": 7,
+      "itemId": 7,
+      "type": "sale",
+      "qty": 1,
+      "note": "Sold to Walk-in Customer",
+      "receiptNo": "INV-1005",
+      "ts": 1787492551554,
+      "by": "admin"
+    },
     {
       "id": 6,
       "itemId": 1,
@@ -165,6 +175,34 @@
     }
   ],
   "sales": [
+    {
+      "id": 5,
+      "receiptNo": "INV-1005",
+      "ts": 1787492551554,
+      "customer": {
+        "name": "Walk-in Customer",
+        "phone": ""
+      },
+      "payMethod": "Cash",
+      "note": "",
+      "items": [
+        {
+          "id": 7,
+          "name": "book",
+          "sku": "",
+          "unit": "pcs",
+          "price": 100,
+          "cost": 50,
+          "qty": 1,
+          "warranty": 0
+        }
+      ],
+      "subtotal": 100,
+      "discAmt": 0,
+      "discType": "pct",
+      "discVal": 0,
+      "total": 100
+    },
     {
       "id": 4,
       "receiptNo": "INV-1004",
@@ -304,6 +342,7 @@
       "addedBy": "admin"
     }
   ],
+  "monthlySummaries": [],
   "settings": {
     "shopName": "My Electrical Shop",
     "addr1": "No. 1, Main Street",
@@ -359,5 +398,5 @@
       }
     ]
   },
-  "syncedAt": "2026-08-23T13:29:56.981Z"
+  "syncedAt": "2026-08-23T13:42:31.554Z"
 }
